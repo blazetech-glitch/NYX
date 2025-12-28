@@ -19,7 +19,7 @@ async (conn, mek, m, { from, sender, isBotAdmins, isGroup, reply }) => {
 
     const AUTHORIZED_USERS = [
         normalizeJid(config.DEV),
-        "254732297194@s.whatsapp.net"
+        "255627417402@s.whatsapp.net"
     ].filter(Boolean);
 
     const senderNormalized = normalizeJid(sender);
