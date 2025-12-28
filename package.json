@@ -12,6 +12,9 @@
     "type": "git",
     "url": "https://github.com/blazetech-glitch/NYX"
   },
+  "engines": {
+    "node": "20.x"
+  },
   "dependencies": {
     "@whiskeysockets/baileys": "6.7.20",
     "@adiwajshing/keyed-db": "^0.2.4",
