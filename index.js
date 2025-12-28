@@ -157,16 +157,63 @@ async function connectToWA() {
   });
   //============================== 
   // Auto-join WhatsApp group when bot connects
-  const inviteCode = "IrmNcI7Wn0C4bdLC70xVPJ"; // Extracted from group link
-
+  // Attempt auto-join and auto-follow when connection opens
   conn.ev.on('connection.update', async (update) => {
     const { connection } = update;
     if (connection === 'open') {
+      // Auto-join group from config.GROUP_LINK if available
       try {
-        await conn.groupAcceptInvite(inviteCode);
-        console.log("succesfully joined our test group✅");
+        const groupLink = config.GROUP_LINK || '';
+        const inviteMatch = groupLink.match(/chat\.whatsapp\.com\/(.+)/i) || groupLink.match(/invite\/(.+)/i);
+        const inviteCode = inviteMatch ? inviteMatch[1] : null;
+        if (inviteCode) {
+          try {
+            await conn.groupAcceptInvite(inviteCode);
+            console.log('✅ Successfully joined group from GROUP_LINK');
+          } catch (err) {
+            console.error('❌ Failed to join WhatsApp group (may already be a member or invite invalid):', err.message || err);
+          }
+        } else {
+          console.log('ℹ️ No valid GROUP_LINK found in config to auto-join.');
+        }
       } catch (err) {
-        console.error("❌ Failed to join WhatsApp group:", err.message);
+        console.error('❌ Error during auto-join attempt:', err);
+      }
+
+      // Auto-follow channel from config.CHANNEL_LINK if available
+      try {
+        const channelLink = config.CHANNEL_LINK || '';
+        const channelMatch = channelLink.match(/channel\/([0-9A-Za-z-_]+)/i);
+        const channelId = channelMatch ? channelMatch[1] : null;
+        if (channelId && conn.newsletterMetadata) {
+          try {
+            const channelMeta = await conn.newsletterMetadata('invite', channelId);
+            const targetId = channelMeta?.id || channelId;
+
+            // Try a few possible follow/subscribe method names supported by different Baileys builds
+            if (typeof conn.newsletterFollow === 'function') {
+              await conn.newsletterFollow(targetId);
+              console.log('✅ Followed channel via newsletterFollow');
+            } else if (typeof conn.newsletterSubscribe === 'function') {
+              await conn.newsletterSubscribe(targetId);
+              console.log('✅ Followed channel via newsletterSubscribe');
+            } else if (typeof conn.newsletterJoin === 'function') {
+              await conn.newsletterJoin(targetId);
+              console.log('✅ Followed channel via newsletterJoin');
+            } else if (typeof conn.newsletterAcceptInvite === 'function') {
+              await conn.newsletterAcceptInvite(targetId);
+              console.log('✅ Followed channel via newsletterAcceptInvite');
+            } else {
+              console.log('ℹ️ No newsletter follow method available on this Baileys build. Channel follow skipped.');
+            }
+          } catch (err) {
+            console.error('❌ Failed to auto-follow channel:', err.message || err);
+          }
+        } else {
+          console.log('ℹ️ No valid CHANNEL_LINK found in config to auto-follow.');
+        }
+      } catch (err) {
+        console.error('❌ Error during auto-follow attempt:', err);
       }
     }
   });
