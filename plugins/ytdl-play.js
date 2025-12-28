@@ -7,7 +7,7 @@ const path = require('path');
 const ffmpeg = require('fluent-ffmpeg');
 
 cmd({
-    pattern: "popkidplay",
+    pattern: "play",
     alias: ["ytplay", "ytmp3", "song", "audio", "yta"],
     react: "🎵",
     desc: "Download YouTube audio with multiple API fallbacks",
@@ -31,9 +31,9 @@ cmd({
         const duration = vid.timestamp || "Unknown";
         const views = vid.views || "Unknown";
         const author = vid.author?.name || "Unknown";
-        
+
         const outputPath = path.join(__dirname, '..', 'temp', `${Date.now()}_${title}.mp3`);
-        
+
         // Create temp directory if it doesn't exist
         const tempDir = path.join(__dirname, '..', 'temp');
         if (!fs.existsSync(tempDir)) {
@@ -71,13 +71,13 @@ cmd({
             try {
                 console.log(`Trying API: ${api}`);
                 const res = await axios.get(api, { timeout: 30000 });
-                
+
                 // Extract audio URL from different API response formats
-                let audioUrl = res.data?.result?.downloadUrl || 
-                             res.data?.url ||
-                             res.data?.data?.downloadURL ||
-                             res.data?.result ||
-                             res.data?.downloadUrl;
+                let audioUrl = res.data?.result?.downloadUrl ||
+                    res.data?.url ||
+                    res.data?.data?.downloadURL ||
+                    res.data?.result ||
+                    res.data?.downloadUrl;
 
                 if (!audioUrl) {
                     console.warn(`No audio URL found in API response: ${api}`);
@@ -139,12 +139,12 @@ cmd({
                 // Clean up
                 fs.unlinkSync(outputPath);
                 success = true;
-                
+
                 // Send success reaction
-                await conn.sendMessage(from, { 
-                    react: { text: "✅", key: mek.key } 
+                await conn.sendMessage(from, {
+                    react: { text: "✅", key: mek.key }
                 });
-                
+
                 break;
 
             } catch (err) {
@@ -158,10 +158,10 @@ cmd({
             for (const api of apis) {
                 try {
                     const res = await axios.get(api, { timeout: 30000 });
-                    let audioUrl = res.data?.result?.downloadUrl || 
-                                 res.data?.url ||
-                                 res.data?.data?.downloadURL ||
-                                 res.data?.result;
+                    let audioUrl = res.data?.result?.downloadUrl ||
+                        res.data?.url ||
+                        res.data?.data?.downloadURL ||
+                        res.data?.result;
 
                     if (audioUrl) {
                         await conn.sendMessage(from, {
@@ -169,9 +169,9 @@ cmd({
                             mimetype: "audio/mpeg",
                             fileName: `${title}.mp3`
                         }, { quoted: mek });
-                        
-                        await conn.sendMessage(from, { 
-                            react: { text: "✅", key: mek.key } 
+
+                        await conn.sendMessage(from, {
+                            react: { text: "✅", key: mek.key }
                         });
                         success = true;
                         break;
@@ -183,15 +183,15 @@ cmd({
         }
 
         if (!success) {
-            await conn.sendMessage(from, { 
-                react: { text: "❌", key: mek.key } 
+            await conn.sendMessage(from, {
+                react: { text: "❌", key: mek.key }
             });
             reply("🚫 *All download servers failed. Please try again later.*");
         }
 
     } catch (e) {
         console.error("❌ Error in .play command:", e);
-        
+
         // Clean up temp file if it exists
         try {
             if (fs.existsSync(outputPath)) {
@@ -200,24 +200,24 @@ cmd({
         } catch (cleanupErr) {
             // Ignore cleanup errors
         }
-        
-        await conn.sendMessage(from, { 
-            react: { text: "❌", key: mek.key } 
+
+        await conn.sendMessage(from, {
+            react: { text: "❌", key: mek.key }
         });
         reply("🚨 *Something went wrong!*\n" + e.message);
     }
 });
 
 // Enhanced play4 command with multiple APIs
-cmd({ 
-    pattern: "video", 
-    alias: ["ytmp4", "ytvideo", "yta4"], 
-    react: "🎬", 
-    desc: "Download YouTube video with multiple API fallbacks", 
-    category: "download", 
-    use: '.play4 <video name or YouTube URL>', 
-    filename: __filename 
-}, async (conn, mek, m, { from, reply, q }) => { 
+cmd({
+    pattern: "video",
+    alias: ["ytmp4", "ytvideo", "yta4"],
+    react: "🎬",
+    desc: "Download YouTube video with multiple API fallbacks",
+    category: "download",
+    use: '.play4 <video name or YouTube URL>',
+    filename: __filename
+}, async (conn, mek, m, { from, reply, q }) => {
     try {
         let input = q || (m.quoted && m.quoted.text?.trim());
         if (!input) return reply("❌ *Please enter a video name or YouTube link!*");
@@ -271,12 +271,12 @@ cmd({
         for (const api of videoApis) {
             try {
                 const res = await axios.get(api, { timeout: 30000 });
-                
-                let downloadUrl = res.data?.result?.download || 
-                                res.data?.downloadUrl ||
-                                res.data?.url ||
-                                res.data?.result?.url ||
-                                res.data?.videoUrl;
+
+                let downloadUrl = res.data?.result?.download ||
+                    res.data?.downloadUrl ||
+                    res.data?.url ||
+                    res.data?.result?.url ||
+                    res.data?.videoUrl;
 
                 if (downloadUrl) {
                     await conn.sendMessage(from, {
@@ -285,8 +285,8 @@ cmd({
                         fileName: `${title}.mp4`
                     }, { quoted: mek });
 
-                    await conn.sendMessage(from, { 
-                        react: { text: "✅", key: mek.key } 
+                    await conn.sendMessage(from, {
+                        react: { text: "✅", key: mek.key }
                     });
                     success = true;
                     break;
@@ -298,16 +298,16 @@ cmd({
         }
 
         if (!success) {
-            await conn.sendMessage(from, { 
-                react: { text: "❌", key: mek.key } 
+            await conn.sendMessage(from, {
+                react: { text: "❌", key: mek.key }
             });
             reply("🚫 *All video download servers failed. Please try again later.*");
         }
 
     } catch (e) {
         console.error("❌ Error in .play4 command:", e);
-        await conn.sendMessage(from, { 
-            react: { text: "❌", key: mek.key } 
+        await conn.sendMessage(from, {
+            react: { text: "❌", key: mek.key }
         });
         reply("🚨 *Something went wrong while downloading video!*");
     }
@@ -334,7 +334,7 @@ cmd({
         const vid = yt.results[0];
 
         const caption =
-`*YT AUDIO DOWNLOADER*
+            `*YT AUDIO DOWNLOADER*
 ╭━━❐━⪼
 ┇๏ *Title*    –  ${vid.title}
 ┇๏ *Duration* –  ${vid.timestamp}

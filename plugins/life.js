@@ -4,7 +4,7 @@ const { runtime } = require('../lib/functions');
 const config = require('../config');
 
 cmd({
-    pattern: "popkidstatus",
+    pattern: "NYXtatus",
     alias: ["status", "live"],
     desc: "Check uptime and system status",
     category: "main",
@@ -28,7 +28,7 @@ cmd({
             const responseTime = Date.now() - mek.messageTimestamp * 1000;
 
             const captionText = `
-*┏────〘 ᴘᴏᴘᴋɪᴅ 〙───⊷*
+*┏────〘 NYX 〙───⊷*
 *┃* ʙᴏᴛ ᴜᴘᴛɪᴍᴇ: ${uptime()}
 *┃* ᴀᴄᴛɪᴠᴇ ᴜsᴇʀs: ${Object.keys(conn.chats).length}
 *┃* ʏᴏᴜʀ ɴᴜᴍʙᴇʀ: ${sender.split('@')[0]}
@@ -36,7 +36,7 @@ cmd({
 *┃* ᴍᴇᴍᴏʀʏ ᴜsᴀɢᴇ: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB
 *┗──────────────⊷
 
-> *▫️ᴘᴏᴘᴋɪᴅ ᴍɪɴɪ ᴍᴀɪɴ*
+> *▫️NYX MD MAIN*
 > sᴛᴀᴛᴜs: ONLINE ✅
 > ʀᴇsᴘᴏɴᴅ ᴛɪᴍᴇ: ${responseTime}ms`;
 
@@ -54,7 +54,7 @@ cmd({
                                 title: 'ᴄʟɪᴄᴋ ʜᴇʀᴇ ❏',
                                 sections: [
                                     {
-                                        title: `ᴘᴏᴘᴋɪᴅ ᴍɪɴɪ ʙᴏᴛ`,
+                                        title: `NYX MD BOT`,
                                         highlight_label: 'Quick Actions',
                                         rows: [
                                             { title: '📋 ғᴜʟʟ ᴍᴇɴᴜ', description: 'ᴠɪᴇᴡ ᴀʟʟ ᴀᴠᴀɪʟᴀʙʟᴇ ᴄᴍᴅs', id: `${config.PREFIX}menu` },
@@ -97,8 +97,8 @@ cmd({
 
             await conn.sendMessage(from, {
                 image: { url: "https://files.catbox.moe/rw0yfd.png" },
-                caption: `*🤖 ᴘᴏᴘᴋɪᴅ ᴍɪɴɪ ᴀʟɪᴠᴇ*\n\n` +
-                    `*┏────〘 ᴘᴏᴘᴋɪᴅ 〙───⊷*\n` +
+                caption: `*🤖 NYX MD ALIVE*\n\n` +
+                    `*┏────〘 NYX 〙───⊷*\n` +
                     `*┃* ᴜᴘᴛɪᴍᴇ: ${uptime()}\n` +
                     `*┃* sᴛᴀᴛᴜs: ᴏɴʟɪɴᴇ\n` +
                     `*┃* ɴᴜᴍʙᴇʀ: ${sender.split('@')[0]}\n` +
