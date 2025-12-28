@@ -36,7 +36,7 @@ cmd({
         // Send result
         await client.sendMessage(from, {
             image: imageBuffer,
-            caption: "> Powered By popkid❤️",
+            caption: "> Powered By NYX MD ❤️",
             mimetype: 'image/png'
         }, { quoted: message });
 
@@ -88,7 +88,7 @@ cmd({
             audio: audio,
             mimetype: 'audio/mpeg'
         }, { quoted: message });
-        
+
         await client.sendMessage(from, { react: { text: '✅', key: message.key } });
 
     } catch (e) {

@@ -83,7 +83,7 @@ cmd({
 *┃ ᴘʀᴇғɪx : 「 ${config.PREFIX}」* 
 *┃ ᴏᴡɴᴇʀ : ${config.OWNER_NAME}*
 *┃ ᴘʟᴜɢɪɴꜱ : 『 ${commands.length} 』*
-*┃ ᴅᴇᴠ : ᴘᴏᴘᴋɪᴅ*
+*┃ ᴅᴇᴠ : BLAZE TEAM*
 *┃ ᴠᴇʀꜱɪᴏɴ : 2.0.0*
 *┗──────────────⊷*`;
 

@@ -27,7 +27,7 @@ cmd({
     // Check if quoted message exists and has media
     const quotedMsg = quoted || message;
     const mimeType = (quotedMsg.msg || quotedMsg).mimetype || '';
-    
+
     if (!mimeType || !mimeType.startsWith('image/')) {
       return reply("Please reply to an image file (JPEG/PNG)");
     }
@@ -35,7 +35,7 @@ cmd({
     // Download the media
     const mediaBuffer = await quotedMsg.download();
     const fileSize = formatBytes(mediaBuffer.length);
-    
+
     // Get file extension based on mime type
     let extension = '';
     if (mimeType.includes('image/jpeg')) extension = '.jpg';
@@ -75,7 +75,7 @@ cmd({
     await reply(
       `🔍 *Image Analysis Results*\n\n` +
       `${scanResponse.data.result}\n\n` +
-      `> *popkid xtr*`
+      `> *NYX*`
     );
 
   } catch (error) {

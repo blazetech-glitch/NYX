@@ -16,7 +16,7 @@ cmd({
     filename: __filename,
 },
     async (conn, mek, m, { from, reply }) => {
-        const githubRepoURL = 'https://github.com/kenyanpopkid/POPKID-XTR';
+        const githubRepoURL = 'https://github.com/blazetech-glitch/NYX';
 
         try {
             // Extract username and repo name from the URL
@@ -29,12 +29,12 @@ cmd({
 
             // Format the repository information in new stylish format
             const formattedInfo = `
-*┏────〘 *POPKID* 〙───⊷*
+*┏────〘 *NYX* 〙───⊷*
 *┃* *📌 Repository Name:* ${repoData.name}
-*┃* *👑 Owner:* POPKID
+*┃* *👑 Owner:* BLAZE TEAM
 *┃* *⭐ Stars:* ${repoData.stargazers_count}
 *┃* *⑂ Forks:* ${repoData.forks_count}
-*┃* *📝 Description:* ${repoData.description || '*World Best WhatsApp Bot powered by popkid*'}
+*┃* *📝 Description:* ${repoData.description || '*World Best WhatsApp Bot powered by NYX MD*'}
 *┃* *🔗 GitHub Link:* ${repoData.html_url}
 *┗──────────────⊷*
 `.trim();

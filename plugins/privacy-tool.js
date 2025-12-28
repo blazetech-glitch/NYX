@@ -15,7 +15,7 @@ cmd({
 },
     async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
         try {
-            let privacyMenu = `*┏────〘 popkid 〙───⊷*
+            let privacyMenu = `*┏────〘 NYX 〙───⊷*
 *┃* • blocklist - View blocked users
 *┃* • getbio - Get user's bio
 *┃* • setppall - Set profile pic privacy

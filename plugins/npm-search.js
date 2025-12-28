@@ -33,7 +33,7 @@ cmd({
 
     // Create the response message
     const message = `
-*POPKID-MD NPM SEARCH*
+  *NYX MD NPM SEARCH*
 
 *🔰 NPM PACKAGE:* ${packageName}
 *📄 DESCRIPTION:* ${description}

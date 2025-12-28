@@ -28,7 +28,7 @@ cmd(
         if (mime === "imageMessage" || mime === "stickerMessage") {
             let media = await mek.quoted.download();
             let sticker = new Sticker(media, {
-                pack: pack, 
+                pack: pack,
                 type: StickerTypes.FULL,
                 categories: ["🤩", "🎉"],
                 id: "12345",
@@ -57,16 +57,16 @@ cmd(
     async (conn, mek, m, { quoted, args, q, reply, from }) => {
         if (!mek.quoted) return reply(`*Reply to any Image or Video, Sir.*`);
         let mime = mek.quoted.mtype;
-        let pack = Config.STICKER_NAME || "popkid xtr";
-        
+        let pack = Config.STICKER_NAME || "NYX MD";
+
         if (mime === "imageMessage" || mime === "stickerMessage") {
             let media = await mek.quoted.download();
             let sticker = new Sticker(media, {
-                pack: pack, 
+                pack: pack,
                 type: StickerTypes.FULL,
-                categories: ["🤩", "🎉"], 
+                categories: ["🤩", "🎉"],
                 id: "12345",
-                quality: 75, 
+                quality: 75,
                 background: 'transparent',
             });
             const buffer = await sticker.toBuffer();

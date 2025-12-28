@@ -8,7 +8,7 @@ cmd({
   react: "🎵",
   desc: "Download YouTube audio using GiftedTech API",
   category: "download",
-  use: ".popkidplay <song name or YouTube URL>",
+  use: ".play <song name or YouTube URL>",
   filename: __filename
 }, async (conn, mek, m, { from, reply, q }) => {
   try {
@@ -58,7 +58,7 @@ cmd({
     await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
 
   } catch (err) {
-    console.error("❌ Error in popkidplay:", err);
+    console.error("❌ Error in play command:", err);
     await conn.sendMessage(from, { react: { text: "❌", key: mek.key } });
     reply("⚠️ Something went wrong while downloading audio!");
   }
