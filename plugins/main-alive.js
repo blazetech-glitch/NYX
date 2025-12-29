@@ -1,48 +1,54 @@
 const { cmd, commands } = require('../command');
-const os = require("os");
-const { runtime } = require('../lib/functions');
+const os = require('os');
+const { runtime, getBuffer } = require('../lib/functions');
 const config = require('../config');
 
 cmd({
-    pattern: "alive",
-    alias: ["status", "live"],
-    desc: "Check uptime and system status",
-    category: "main",
-    react: "🟢",
+    pattern: 'alive',
+    alias: ['status', 'live'],
+    desc: 'Check uptime and system status',
+    category: 'main',
+    react: '🟢',
     filename: __filename
 },
-async (conn, mek, m, { from, sender, reply }) => {
-    try {
-        const totalCmds = commands.length;
-        const uptime = () => {
-            let sec = process.uptime();
-            let h = Math.floor(sec / 3600);
-            let m = Math.floor((sec % 3600) / 60);
-            let s = Math.floor(sec % 60);
-            return `${h}h ${m}m ${s}s`;
-        };
+    async (conn, mek, m, { from, sender, reply }) => {
+        try {
+            const totalCmds = commands.length;
+            const up = runtime(process.uptime());
+            const mem = process.memoryUsage();
+            const usedMB = (mem.heapUsed / 1024 / 1024).toFixed(2);
+            const totalMB = (mem.heapTotal / 1024 / 1024).toFixed(2);
+            const platform = `${os.type()} ${os.release()} ${os.arch()}`;
+            const cpu = os.cpus()[0].model;
 
-        const status = `*┏────〘 ᴘᴏᴘᴋɪᴅ 〙───⊷*
-*┃* *🌐 Platform:* Heroku
-*┃* *📦 Mode:* ${config.MODE || 'private'}
-*┃* *👑 Owner:* ${config.OWNER_NAME || 'ᴘᴏᴘᴋɪᴅ'}
+            const aliveText = `*┏────〘 ${config.BOT_NAME || 'NYX MD'} 〙───⊷*
+*┃* *👑 Owner:* ${config.OWNER_NAME || 'Owner'}
 *┃* *🔹 Prefix:* ${config.PREFIX || '.'}
 *┃* *🧩 Version:* 1.0.0 Beta
-*┃* *📁 Total Commands:* ${totalCmds}
-*┃* *⏱ Runtime:* ${uptime()}
+*┃* *📁 Commands:* ${totalCmds}
+*┃* *⏱ Uptime:* ${up}
+*┃* *💾 Memory:* ${usedMB} MB / ${totalMB} MB
+*┃* *🖥 Platform:* ${platform}
+*┃* *⚙️ CPU:* ${cpu}
+*┃* *🔗 Group:* ${config.GROUP_LINK || 'Not set'}
+*┃* *🔔 Channel:* ${config.CHANNEL_LINK || 'Not set'}
 *┗──────────────⊷*`;
 
-        await conn.sendMessage(from, { 
-            text: status,
-            contextInfo: {
-                mentionedJid: [sender],   // ✅ FIXED
-                forwardingScore: 999,
-                isForwarded: true
+            // try to send an image (alive image) with the card
+            try {
+                const img = config.ALIVE_IMG || config.MENU_IMAGE_URL;
+                await conn.sendMessage(from, {
+                    image: { url: img },
+                    caption: aliveText,
+                    contextInfo: { mentionedJid: [sender] }
+                }, { quoted: mek });
+            } catch (err) {
+                // fallback to text only
+                await conn.sendMessage(from, { text: aliveText, contextInfo: { mentionedJid: [sender] } }, { quoted: mek });
             }
-        }, { quoted: mek });
 
-    } catch (e) {
-        console.error("Error in alive command:", e);
-        reply(`An error occurred: ${e.message}`);
-    }
-});
+        } catch (e) {
+            console.error('Error in alive command:', e);
+            reply(`An error occurred: ${e.message}`);
+        }
+    });

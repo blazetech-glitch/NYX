@@ -35,9 +35,9 @@ cmd({
         for (const image of selectedImages) {
             await conn.sendMessage(
                 from,
-                { 
+                {
                     image: { url: image.images_url },
-                    caption: `*📷 Result for*: ${query}\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴘᴏᴘᴋɪᴅ*`
+                    caption: `*📷 Result for*: ${query}\n> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ starboy*`
                 },
                 { quoted: mek }
             );

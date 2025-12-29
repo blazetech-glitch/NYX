@@ -9,18 +9,18 @@ cmd({
     use: '.weather <city>',
     filename: __filename
 },
-async (conn, mek, m, { from, reply, args }) => {
-    try {
-        if (!args[0]) return reply("❌ Please provide a city name\nExample: .weather London");
-        
-        const city = args.join(' ');
-        const apiUrl = `https://apis.davidcyriltech.my.id/weather?city=${encodeURIComponent(city)}`;
-        
-        const { data } = await axios.get(apiUrl);
-        
-        if (!data.success) return reply("❌ Couldn't fetch weather data for that location");
-        
-        const weatherInfo = `
+    async (conn, mek, m, { from, reply, args }) => {
+        try {
+            if (!args[0]) return reply("❌ Please provide a city name\nExample: .weather London");
+
+            const city = args.join(' ');
+            const apiUrl = `https://apis.davidcyriltech.my.id/weather?city=${encodeURIComponent(city)}`;
+
+            const { data } = await axios.get(apiUrl);
+
+            if (!data.success) return reply("❌ Couldn't fetch weather data for that location");
+
+            const weatherInfo = `
 🌤 *Weather for ${data.data.location}, ${data.data.country}*
 
 🌡 Temperature: ${data.data.temperature}
@@ -33,13 +33,13 @@ async (conn, mek, m, { from, reply, args }) => {
 
 📍 Coordinates: ${data.data.coordinates.latitude}, ${data.data.coordinates.longitude}
 
-_ᴘᴏᴘᴋɪᴅ xᴛʀ ʙᴏᴛ_
+_nYx xᴛʀ ʙᴏᴛ_
 `.trim();
 
-        await reply(weatherInfo);
-        
-    } catch (error) {
-        console.error('Weather Error:', error);
-        reply("❌ Failed to fetch weather data. Please try again later.");
-    }
-});
+            await reply(weatherInfo);
+
+        } catch (error) {
+            console.error('Weather Error:', error);
+            reply("❌ Failed to fetch weather data. Please try again later.");
+        }
+    });

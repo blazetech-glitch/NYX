@@ -34,7 +34,7 @@ cmd({
 
     await conn.sendMessage(from, {
       video: { url: downloadLink },
-      caption: `> ᴘᴏᴘᴋɪᴅ 💜`
+      caption: `> starboy 💜`
     }, { quoted: mek });
 
     await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
@@ -77,7 +77,7 @@ cmd({
 
     await conn.sendMessage(from, {
       video: { url: downloadLink },
-      caption: `> ᴘᴏᴘᴋɪᴅ 💜`
+      caption: `> starboy 💜`
     }, { quoted: mek });
 
     await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
@@ -121,7 +121,7 @@ cmd({
 
     await conn.sendMessage(from, {
       video: { url: downloadLink },
-      caption: `> ᴘᴏᴘᴋɪᴅ 💜`
+      caption: `> starboy 💜`
     }, { quoted: mek });
 
     await conn.sendMessage(from, { react: { text: '✅', key: m.key } });

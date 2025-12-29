@@ -1,77 +1,48 @@
 const config = require('../config');
 const { cmd, commands } = require('../command');
+const { runtime } = require('../lib/functions');
+const os = require('os');
 
 cmd({
     pattern: "ping",
-    alias: ["speed", "pong"], use: '.ping',
-    desc: "Check bot's response time.",
+    alias: ["speed", "pong", "ping2"],
+    desc: "Check bot's response time and system stats.",
     category: "main",
     react: "⚡",
     filename: __filename
 },
     async (conn, mek, m, { from, quoted, sender, reply }) => {
         try {
-            const start = new Date().getTime();
+            const start = Date.now();
+            const loading = await conn.sendMessage(from, { text: '*Pinging...*' });
 
-            const reactionEmojis = ['🔥', '⚡', '🚀', '💨', '🎯', '🎉', '🌟', '💥', '🕐', '🔹'];
-            const textEmojis = ['💎', '🏆', '⚡️', '🚀', '🎶', '🌠', '🌀', '🔱', '🛡️', '✨'];
+            // small reaction for flair
+            try { await conn.sendMessage(from, { react: { text: '⚡', key: mek.key } }) } catch (e) { }
 
-            const reactionEmoji = reactionEmojis[Math.floor(Math.random() * reactionEmojis.length)];
-            let textEmoji = textEmojis[Math.floor(Math.random() * textEmojis.length)];
+            const end = Date.now();
+            const latency = end - start; // ms
 
-            // Ensure reaction and text emojis are different
-            while (textEmoji === reactionEmoji) {
-                textEmoji = textEmojis[Math.floor(Math.random() * textEmojis.length)];
-            }
+            const up = runtime(process.uptime());
+            const mem = process.memoryUsage();
+            const usedMB = (mem.heapUsed / 1024 / 1024).toFixed(2);
+            const totalMB = (mem.heapTotal / 1024 / 1024).toFixed(2);
 
-            // Send reaction using conn.sendMessage()
+            const platform = `${os.type()} ${os.arch()} (${os.platform()})`;
+            const cpus = os.cpus()[0].model;
+
+            const nice = `⚡ *PONG!* ${['🚀', '🌟', '💫', '🔥'][Math.floor(Math.random() * 4)]}\n*Latency:* ${latency} ms\n*Uptime:* ${up}\n*Memory:* ${usedMB} MB / ${totalMB} MB\n*Platform:* ${platform}\n*CPU:* ${cpus}\n*Bot:* ${config.BOT_NAME}\n*Owner:* ${config.OWNER_NAME}\n`;
+
             await conn.sendMessage(from, {
-                react: { text: textEmoji, key: mek.key }
+                image: { url: config.MENU_IMAGE_URL },
+                caption: nice,
+                contextInfo: { mentionedJid: [sender] }
+            }, { quoted: loading }).catch(() => {
+                // fallback to text only
+                conn.sendMessage(from, { text: nice }, { quoted: loading }).catch(() => { });
             });
-
-            const end = new Date().getTime();
-            const responseTime = (end - start) / 1000;
-
-            const text = `> *ᴘᴏɴɢ: ${responseTime.toFixed(2)}ms ${reactionEmoji}*`;
-
-            await conn.sendMessage(from, {
-                text,
-                contextInfo: {
-                    mentionedJid: [sender],
-                    forwardingScore: 999,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363424512102809@newsletter',
-                        newsletterName: "NYX MD",
-                        serverMessageId: 143
-                    }
-                }
-            }, { quoted: mek });
 
         } catch (e) {
             console.error("Error in ping command:", e);
             reply(`An error occurred: ${e.message}`);
         }
     });
-
-// ping2 
-
-cmd({
-    pattern: "ping2",
-    desc: "Check bot's response time.",
-    category: "main",
-    react: "🍂",
-    filename: __filename
-},
-    async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
-        try {
-            const startTime = Date.now()
-            const message = await conn.sendMessage(from, { text: '*PINGING...*' })
-            const endTime = Date.now()
-            const ping = endTime - startTime
-            await conn.sendMessage(from, { text: `*sᴘᴇᴇᴅ : ${ping}ms*` }, { quoted: message })
-        } catch (e) {
-            console.log(e)
-            reply(`${e}`)
-        }
-    })
