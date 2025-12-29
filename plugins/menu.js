@@ -21,36 +21,15 @@ const normalize = (str) => str.toLowerCase().replace(/\s+menu$/, '').trim();
 
 // Emojis par catégorie normalisée
 const emojiByCategory = {
-  ai: '🤖',
-  anime: '🍥',
-  audio: '🎧',
-  bible: '📖',
-  download: '⬇️',
-  downloader: '📥',
-  fun: '🎮',
-  game: '🕹️',
-  group: '👥',
-  img_edit: '🖌️',
-  info: 'ℹ️',
-  information: '🧠',
-  logo: '🖼️',
-  main: '🏠',
-  media: '🎞️',
-  menu: '📜',
-  misc: '📦',
-  music: '🎵',
-  other: '📁',
-  owner: '👑',
-  privacy: '🔒',
-  search: '🔎',
-  settings: '⚙️',
-  sticker: '🌟',
-  tools: '🛠️',
-  user: '👤',
-  utilities: '🧰',
-  utility: '🧮',
-  wallpapers: '🖼️',
-  whatsapp: '📱',
+  ai: '🤖', anime: '🍥', audio: '🎧', bible: '📖',
+  download: '⬇️', downloader: '📥', fun: '🎮', game: '🕹️',
+  group: '👥', img_edit: '🖌️', info: 'ℹ️', information: '🧠',
+  logo: '🖼️', main: '🏠', media: '🎞️', menu: '📜',
+  misc: '📦', music: '🎵', other: '📁', owner: '👑',
+  privacy: '🔒', search: '🔎', settings: '⚙️',
+  sticker: '🌟', tools: '🛠️', user: '👤',
+  utilities: '🧰', utility: '🧮', wallpapers: '🖼️',
+  whatsapp: '📱'
 };
 
 cmd({
@@ -75,19 +54,23 @@ cmd({
       return `${h}h ${m}m ${s}s`;
     };
 
+    // 🌟 BEAUTIFUL HEADER
     let menu = `
-  *┏────〘 NYX MD 〙───⊷*
-*┃ ᴜꜱᴇʀ : @${sender.split("@")[0]}*
-*┃ ʀᴜɴᴛɪᴍᴇ : ${uptime()}*
-*┃ ᴍᴏᴅᴇ : ${config.MODE}*
-*┃ ᴘʀᴇғɪx : 「 ${config.PREFIX}」* 
-*┃ ᴏᴡɴᴇʀ : ${config.OWNER_NAME}*
-*┃ ᴘʟᴜɢɪɴꜱ : 『 ${commands.length} 』*
-*┃ ᴅᴇᴠ : BLAZE TEAM*
-*┃ ᴠᴇʀꜱɪᴏɴ : 2.0.0*
-*┗──────────────⊷*`;
+╔═══════════════╗
+   ☢️  ${toUpperStylized('NYX MD')}  ☢️
+╚═══════════════╝
+╭───────────────────⟡
+│ 👤 ᴜꜱᴇʀ : @${sender.split("@")[0]}
+│ ⏱️ ʀᴜɴᴛɪᴍᴇ : ${uptime()}
+│ ⚙️ ᴍᴏᴅᴇ : ${config.MODE}
+│ 🔑 ᴘʀᴇғɪx : 「 ${config.PREFIX} 」
+│ 👑 ᴏᴡɴᴇʀ : ${config.OWNER_NAME}
+│ 🧩 ᴘʟᴜɢɪɴꜱ : ${commands.length}
+│ 🛠️ ᴅᴇᴠ : BLAZE TEAM
+│ 🚀 ᴠᴇʀꜱɪᴏɴ : 2.0.0
+╰───────────────────⟡`;
 
-    // Group commands by category (improved logic)
+    // Group commands by category
     const categories = {};
     for (const cmd of commands) {
       if (cmd.category && !cmd.dontAdd && cmd.pattern) {
@@ -97,19 +80,27 @@ cmd({
       }
     }
 
-    // Add sorted categories with stylized text
+    // 🌈 ROYAL CATEGORY STYLE
     for (const cat of Object.keys(categories).sort()) {
-      const emoji = emojiByCategory[cat] || '🧛‍♂️';
-      menu += `\n\n*┏─『 ${emoji} ${toUpperStylized(cat)} ${toUpperStylized('Menu')} 』──⊷*\n`;
+      const emoji = emojiByCategory[cat] || '✨';
+      menu += `
+
+╭═══════════════⟡
+│ ${emoji}  ${toUpperStylized(cat)}  ${toUpperStylized('Menu')}
+╰═══════════════⟡`;
       for (const cmd of categories[cat].sort()) {
-        menu += `*│ ${prefix}${cmd}*\n`;
+        menu += `
+│ ✦ ${prefix}${cmd}`;
       }
-      menu += `*┗──────────────⊷*`;
+      menu += `
+╰───────────────────⟡`;
     }
 
-    menu += `\n\n> ${config.DESCRIPTION || toUpperStylized('Explore the bot commands!')}`;
+    menu += `
 
-    // Context info for image message
+✨ ${config.DESCRIPTION || toUpperStylized('Explore the power of NYX MD')} ✨`;
+
+    // Context info
     const imageContextInfo = {
       mentionedJid: [sender],
       forwardingScore: 999,
@@ -121,7 +112,7 @@ cmd({
       }
     };
 
-    // Send menu image
+    // Send menu
     await conn.sendMessage(
       from,
       {
@@ -132,24 +123,16 @@ cmd({
       { quoted: mek }
     );
 
-    // Send audio if configured
+    // Optional audio
     if (config.MENU_AUDIO_URL) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(r => setTimeout(r, 1000));
       await conn.sendMessage(
         from,
         {
           audio: { url: config.MENU_AUDIO_URL },
           mimetype: 'audio/mp4',
           ptt: true,
-          contextInfo: {
-            mentionedJid: [sender],
-            forwardingScore: 999,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-              newsletterName: config.OWNER_NAME || toUpperStylized('NYX MD'),
-              serverMessageId: 143
-            }
-          }
+          contextInfo: imageContextInfo
         },
         { quoted: mek }
       );
@@ -157,7 +140,6 @@ cmd({
 
   } catch (e) {
     console.error('Menu Error:', e.message);
-    await reply(`❌ ${toUpperStylized('Error')}: Failed to show menu. Try again.\n${toUpperStylized('Details')}: ${e.message}`);
+    await reply(`❌ ${toUpperStylized('Error')}: Menu failed\n${e.message}`);
   }
 });
-

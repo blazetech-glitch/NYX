@@ -28,7 +28,7 @@ module.exports = {
     // add bot namw here for menu
     STICKER_NAME: process.env.STICKER_NAME || "NYX-MD",
     // type sticker pack name
-    CUSTOM_REACT: process.env.CUSTOM_REACT || "true",
+    CUSTOM_REACT: process.env.CUSTOM_REACT || "false",
     // make this true for custum emoji react
     CUSTOM_REACT_EMOJIS: process.env.CUSTOM_REACT_EMOJIS || "💝,💖,💗,❤️‍🩹,❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍",
     // chose custom react emojis by yourself
@@ -53,7 +53,7 @@ module.exports = {
     OWNER_NUMBER2: process.env.OWNER_NUMBER2 || "255754206718",
     READ_MESSAGE: process.env.READ_MESSAGE || "false",
     // Turn true or false for automatic read msgs
-    AUTO_REACT: process.env.AUTO_REACT || "true",
+    AUTO_REACT: process.env.AUTO_REACT || "false",
     // make this true or false for auto react on all msgs
     ANTI_BAD: process.env.ANTI_BAD || "true",
     // false or true for anti bad words
@@ -65,7 +65,7 @@ module.exports = {
     // make true for send automatic voices
     AUTO_STICKER: process.env.AUTO_STICKER || "false",
     // make true for automatic stickers
-    AUTO_REPLY: process.env.AUTO_REPLY || "false",
+    AUTO_REPLY: process.env.AUTO_REPLY || "true",
     // make true or false automatic text reply
     ALWAYS_ONLINE: process.env.ALWAYS_ONLINE || "false",
     // maks true for always online
