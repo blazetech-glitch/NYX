@@ -1,6 +1,6 @@
-name: nyx-md
+name: popkid-md
 services:
-  - name: nyx-md-service
+  - name: popkid-md-service
     type: web
     ports:
       - 5000

@@ -22,10 +22,10 @@ cmd({
     react: "🙊",
     filename: __filename
 },
-    async (conn, mek, m, { from, sender, pushname, reply }) => {
-        try {
-            let totalCommands = Object.keys(commands).length;
-            const caption = `*┏────〘 NYX 〙───⊷*
+async (conn, mek, m, { from, sender, pushname, reply }) => {
+    try {
+        let totalCommands = Object.keys(commands).length;
+        const caption = `*┏────〘 popkid 〙───⊷*
 *┃  Owner:* ${config.OWNER_NAME}
 *┃  Prefix:* ${config.PREFIX}
 *┃  Version:* 1.0.0 Beta
@@ -34,7 +34,7 @@ cmd({
 *┃  Runtime:* ${runtime(process.uptime())}
 *┗──────────────⊷*
 
-*┏────〘 NYX XTR 〙───⊷*
+*┏────〘 popkid xtr 〙───⊷*
 *┃ 1.  Quran Menu*
 *┃ 2.  Setting Menu*
 *┃ 3.  AI Menu*
@@ -53,45 +53,45 @@ cmd({
 
 > Reply with the number to select menu (1-14)`;
 
-            // Send menu image with caption
-            const sentMsg = await conn.sendMessage(from, {
-                image: { url: config.MENU_IMAGE_URL },
-                caption: caption,
-                contextInfo: commonContextInfo(sender)
+        // Send menu image with caption
+        const sentMsg = await conn.sendMessage(from, {
+            image: { url: config.MENU_IMAGE_URL },
+            caption: caption,
+            contextInfo: commonContextInfo(sender)
+        }, { quoted: mek });
+
+        // Send audio voice message
+        const audioPath = path.join(__dirname, '../assets/menux.m4a');
+        if (fs.existsSync(audioPath)) {
+            await conn.sendMessage(from, {
+                audio: { url: audioPath },
+                mimetype: 'audio/mp4',
+                ptt: true
             }, { quoted: mek });
+        } else {
+            console.log("Menu audio file not found");
+        }
 
-            // Send audio voice message
-            const audioPath = path.join(__dirname, '../assets/menux.m4a');
-            if (fs.existsSync(audioPath)) {
-                await conn.sendMessage(from, {
-                    audio: { url: audioPath },
-                    mimetype: 'audio/mp4',
-                    ptt: true
-                }, { quoted: mek });
-            } else {
-                console.log("Menu audio file not found");
-            }
+        const messageID = sentMsg.key.id;
 
-            const messageID = sentMsg.key.id;
+        conn.ev.on("messages.upsert", async (msgData) => {
+            const receivedMsg = msgData.messages[0];
+            if (!receivedMsg.message) return;
 
-            conn.ev.on("messages.upsert", async (msgData) => {
-                const receivedMsg = msgData.messages[0];
-                if (!receivedMsg.message) return;
+            const receivedText = receivedMsg.message.conversation || receivedMsg.message.extendedTextMessage?.text;
+            const senderID = receivedMsg.key.remoteJid;
+            const isReplyToBot = receivedMsg.message.extendedTextMessage?.contextInfo?.stanzaId === messageID;
 
-                const receivedText = receivedMsg.message.conversation || receivedMsg.message.extendedTextMessage?.text;
-                const senderID = receivedMsg.key.remoteJid;
-                const isReplyToBot = receivedMsg.message.extendedTextMessage?.contextInfo?.stanzaId === messageID;
+            if (isReplyToBot) {
+                await conn.sendMessage(senderID, {
+                    react: { text: '⬇️', key: receivedMsg.key }
+                });
 
-                if (isReplyToBot) {
-                    await conn.sendMessage(senderID, {
-                        react: { text: '⬇️', key: receivedMsg.key }
-                    });
-
-                    switch (receivedText) {
-                        case "1": // Quran Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `*┏────〘 ǫᴜʀᴀɴ ᴍᴇɴᴜ〙───⊷*
+                switch (receivedText) {
+                    case "1": // Quran Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `*┏────〘 ǫᴜʀᴀɴ ᴍᴇɴᴜ〙───⊷*
 *┃ • surah <number>*
 *┃ • ayat <surah:verse>*
 *┃ • tafsir <surah>*
@@ -107,14 +107,14 @@ cmd({
 *┃ • hijridate*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "2": // Setting Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `*┏────〘 sᴇᴛᴛɪɴs ᴍᴇɴᴜ 〙───⊷*
+                    case "2": // Setting Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `*┏────〘 sᴇᴛᴛɪɴs ᴍᴇɴᴜ 〙───⊷*
                             *┃**BOT CONFIGURATION* 
 *┃* .prefix new prefix
 *┃* .botname new name
@@ -149,14 +149,14 @@ cmd({
 *┗──────────────⊷*
 > *Use ${config.PREFIX}command on/off*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "3": // AI Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `*┏────〘 ᴀɪ ᴍᴇɴᴜ 〙───⊷*
+                    case "3": // AI Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `*┏────〘 ᴀɪ ᴍᴇɴᴜ 〙───⊷*
 *┃ • ai <query>*
 *┃ • gpt <query>*
 *┃ • gpt2 <query>*
@@ -174,14 +174,14 @@ cmd({
 *┃ • askimmu <query>*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "4": // Anime Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `a*┏────〘 ᴀɴɪᴍᴇ ᴍᴇɴᴜ〙───⊷*
+                    case "4": // Anime Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `a*┏────〘 ᴀɴɪᴍᴇ ᴍᴇɴᴜ〙───⊷*
 *┃ • waifu*
 *┃ • neko*
 *┃ • loli*
@@ -200,14 +200,14 @@ cmd({
 *┃ • anime5*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "5": // Reactions
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `*┏────〘 ʀᴇᴀᴄᴛɪᴏɴ ᴍᴇɴᴜ 〙───⊷*
+                    case "5": // Reactions
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `*┏────〘 ʀᴇᴀᴄᴛɪᴏɴ ᴍᴇɴᴜ 〙───⊷*
 *┃ • bully @tag*
 *┃ • cuddle @tag*
 *┃ • hug @tag*
@@ -226,14 +226,14 @@ cmd({
 *┃ • handhold @tag*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "6": // Convert Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `**┏────〘 ᴄᴏɴᴠᴇɴᴛɪᴏɴ 〙───⊷*
+                    case "6": // Convert Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `**┏────〘 ᴄᴏɴᴠᴇɴᴛɪᴏɴ 〙───⊷*
 *┃ • sticker <image>*
 *┃ • sticker2 <video>*
 *┃ • tomp3 <video>*
@@ -249,14 +249,14 @@ cmd({
 *┃ • fancy <text>*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "7": // Fun Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `*┏────〘 ғɪɴ ᴍᴇɴᴜ 〙───⊷*
+                    case "7": // Fun Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `*┏────〘 ғɪɴ ᴍᴇɴᴜ 〙───⊷*
 *┃ • joke*
 *┃ • meme*
 *┃ • fact*
@@ -272,14 +272,14 @@ cmd({
 *┃ • wouldyourather*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "8": // Download Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `*┏────〘 ᴅᴏᴡɴʟᴏᴀᴅ ᴍᴇɴᴜ 〙───⊷*
+                    case "8": // Download Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `*┏────〘 ᴅᴏᴡɴʟᴏᴀᴅ ᴍᴇɴᴜ 〙───⊷*
 *┃ • ytmp3 <url>*
 *┃ • ytmp4 <url>*
 *┃ • fb <url>*
@@ -299,14 +299,14 @@ cmd({
 *┃ • gdrive <url>*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "9": // Group Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `*┏────〘 ɢʀᴏᴜᴘ ᴍᴇɴᴜ〙───⊷*
+                    case "9": // Group Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `*┏────〘 ɢʀᴏᴜᴘ ᴍᴇɴᴜ〙───⊷*
 *┃ • add @tag*
 *┃ • kick @tag*
 *┃ • promote @tag*
@@ -328,14 +328,14 @@ cmd({
 *┃ • hidetag <text>*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "10": // Main Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `**┏────〘 ᴍᴀɪɴ ᴍᴇɴᴜ 〙───⊷*
+                    case "10": // Main Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `**┏────〘 ᴍᴀɪɴ ᴍᴇɴᴜ 〙───⊷*
 *┃ • ping*
 *┃ • runtime*
 *┃ • uptime*
@@ -348,14 +348,14 @@ cmd({
 *┃ • allmenu*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "11": // Owner Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `*┏────〘 ᴏᴡɴᴇʀ ᴍᴇɴᴜ 〙───⊷*
+                    case "11": // Owner Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `*┏────〘 ᴏᴡɴᴇʀ ᴍᴇɴᴜ 〙───⊷*
 *┃ • broadcast <message>*
 *┃ • ban @tag*
 *┃ • unban @tag*
@@ -374,14 +374,14 @@ cmd({
 *┃ • banlist*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "12": // Other Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `*┏────〘 ᴏᴛʜᴇʀ ᴍᴇɴᴜ 〙───⊷*
+                    case "12": // Other Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `*┏────〘 ᴏᴛʜᴇʀ ᴍᴇɴᴜ 〙───⊷*
 *┃ • weather <location>*
 *┃ • news*
 *┃ • movie <name>*
@@ -397,14 +397,14 @@ cmd({
 *┃ • remind <time> <message>*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "13": // Logo Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `*┏────〘 ʟᴏɢᴏ ᴍᴇɴᴜ 〙───⊷*
+                    case "13": // Logo Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `*┏────〘 ʟᴏɢᴏ ᴍᴇɴᴜ 〙───⊷*
 *┃ • neonlight <text>*
 *┃ • blackpink <text>*
 *┃ • dragonball <text>*
@@ -438,14 +438,14 @@ cmd({
 *┃ • birthday <text>*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        case "14": // Tools Menu
-                            await conn.sendMessage(senderID, {
-                                image: { url: config.MENU_IMAGE_URL },
-                                caption: `**┏────〘 ᴛᴏᴏʟ ᴍᴇɴᴜ 〙───⊷*
+                    case "14": // Tools Menu
+                        await conn.sendMessage(senderID, {
+                            image: { url: config.MENU_IMAGE_URL },
+                            caption: `**┏────〘 ᴛᴏᴏʟ ᴍᴇɴᴜ 〙───⊷*
 *┃ • setmyname <name>*
 *┃ • setpp <image>*
 *┃ • setonline <on/off>*
@@ -480,21 +480,21 @@ cmd({
 *┃ • .chr <link> <text/emoji>*
 *┗──────────────⊷*
 > ${config.DESCRIPTION}`,
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                            break;
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
+                        break;
 
-                        default:
-                            await conn.sendMessage(senderID, {
-                                text: "Invalid selection. Please reply with a number between 1-14.",
-                                contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
-                            }, { quoted: receivedMsg });
-                    }
+                    default:
+                        await conn.sendMessage(senderID, {
+                            text: "Invalid selection. Please reply with a number between 1-14.",
+                            contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
+                        }, { quoted: receivedMsg });
                 }
-            });
+            }
+        });
 
-        } catch (e) {
-            console.error(e);
-            reply(`❌ Error:\n${e}`);
-        }
-    });
+    } catch (e) {
+        console.error(e);
+        reply(`❌ Error:\n${e}`);
+    }
+});

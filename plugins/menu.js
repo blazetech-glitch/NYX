@@ -21,15 +21,36 @@ const normalize = (str) => str.toLowerCase().replace(/\s+menu$/, '').trim();
 
 // Emojis par catégorie normalisée
 const emojiByCategory = {
-  ai: '🤖', anime: '🍥', audio: '🎧', bible: '📖',
-  download: '⬇️', downloader: '📥', fun: '🎮', game: '🕹️',
-  group: '👥', img_edit: '🖌️', info: 'ℹ️', information: '🧠',
-  logo: '🖼️', main: '🏠', media: '🎞️', menu: '📜',
-  misc: '📦', music: '🎵', other: '📁', owner: '👑',
-  privacy: '🔒', search: '🔎', settings: '⚙️',
-  sticker: '🌟', tools: '🛠️', user: '👤',
-  utilities: '🧰', utility: '🧮', wallpapers: '🖼️',
-  whatsapp: '📱'
+  ai: '🤖',
+  anime: '🍥',
+  audio: '🎧',
+  bible: '📖',
+  download: '⬇️',
+  downloader: '📥',
+  fun: '🎮',
+  game: '🕹️',
+  group: '👥',
+  img_edit: '🖌️',
+  info: 'ℹ️',
+  information: '🧠',
+  logo: '🖼️',
+  main: '🏠',
+  media: '🎞️',
+  menu: '📜',
+  misc: '📦',
+  music: '🎵',
+  other: '📁',
+  owner: '👑',
+  privacy: '🔒',
+  search: '🔎',
+  settings: '⚙️',
+  sticker: '🌟',
+  tools: '🛠️',
+  user: '👤',
+  utilities: '🧰',
+  utility: '🧮',
+  wallpapers: '🖼️',
+  whatsapp: '📱',
 };
 
 cmd({
@@ -54,23 +75,19 @@ cmd({
       return `${h}h ${m}m ${s}s`;
     };
 
-    // 🌟 BEAUTIFUL HEADER
     let menu = `
-╔═══════════════╗
-   ☢️  ${toUpperStylized('NYX MD')}  ☢️
-╚═══════════════╝
-╭───────────────────⟡
-│ 👤 ᴜꜱᴇʀ : @${sender.split("@")[0]}
-│ ⏱️ ʀᴜɴᴛɪᴍᴇ : ${uptime()}
-│ ⚙️ ᴍᴏᴅᴇ : ${config.MODE}
-│ 🔑 ᴘʀᴇғɪx : 「 ${config.PREFIX} 」
-│ 👑 ᴏᴡɴᴇʀ : ${config.OWNER_NAME}
-│ 🧩 ᴘʟᴜɢɪɴꜱ : ${commands.length}
-│ 🛠️ ᴅᴇᴠ : BLAZE TEAM
-│ 🚀 ᴠᴇʀꜱɪᴏɴ : 2.0.0
-╰───────────────────⟡`;
+*┏────〘 ᴘᴏᴘᴋɪᴅ xᴛʀ 〙───⊷*
+*┃ ᴜꜱᴇʀ : @${sender.split("@")[0]}*
+*┃ ʀᴜɴᴛɪᴍᴇ : ${uptime()}*
+*┃ ᴍᴏᴅᴇ : ${config.MODE}*
+*┃ ᴘʀᴇғɪx : 「 ${config.PREFIX}」* 
+*┃ ᴏᴡɴᴇʀ : ${config.OWNER_NAME}*
+*┃ ᴘʟᴜɢɪɴꜱ : 『 ${commands.length} 』*
+*┃ ᴅᴇᴠ : ᴘᴏᴘᴋɪᴅ*
+*┃ ᴠᴇʀꜱɪᴏɴ : 2.0.0*
+*┗──────────────⊷*`;
 
-    // Group commands by category
+    // Group commands by category (improved logic)
     const categories = {};
     for (const cmd of commands) {
       if (cmd.category && !cmd.dontAdd && cmd.pattern) {
@@ -80,59 +97,59 @@ cmd({
       }
     }
 
-    // 🌈 ROYAL CATEGORY STYLE
+    // Add sorted categories with stylized text
     for (const cat of Object.keys(categories).sort()) {
-      const emoji = emojiByCategory[cat] || '✨';
-      menu += `
-
-╭═══════════════⟡
-│ ${emoji}  ${toUpperStylized(cat)}  ${toUpperStylized('Menu')}
-╰═══════════════⟡`;
+      const emoji = emojiByCategory[cat] || '🧛‍♂️';
+      menu += `\n\n*┏─『 ${emoji} ${toUpperStylized(cat)} ${toUpperStylized('Menu')} 』──⊷*\n`;
       for (const cmd of categories[cat].sort()) {
-        menu += `
-│ ✦ ${prefix}${cmd}`;
+        menu += `*│ ${prefix}${cmd}*\n`;
       }
-      menu += `
-╰───────────────────⟡`;
+      menu += `*┗──────────────⊷*`;
     }
 
-    menu += `
+    menu += `\n\n> ${config.DESCRIPTION || toUpperStylized('Explore the bot commands!')}`;
 
-✨ ${config.DESCRIPTION || toUpperStylized('Explore the power of NYX MD')} ✨`;
-
-    // Context info
+    // Context info for image message
     const imageContextInfo = {
       mentionedJid: [sender],
       forwardingScore: 999,
       isForwarded: true,
       forwardedNewsletterMessageInfo: {
-        newsletterJid: config.NEWSLETTER_JID || '120363424512102809@newsletter',
-        newsletterName: config.OWNER_NAME || toUpperStylized('NYX MD'),
+        newsletterJid: config.NEWSLETTER_JID || '120363289379419860@newsletter',
+        newsletterName: config.OWNER_NAME || toUpperStylized('popkid'),
         serverMessageId: 143
       }
     };
 
-    // Send menu
+    // Send menu image
     await conn.sendMessage(
       from,
       {
-        image: { url: config.MENU_IMAGE_URL || 'https://files.catbox.moe/rw0yfd.png' },
+        image: { url: config.MENU_IMAGE_URL || 'https://files.catbox.moe/kiy0hl.jpg' },
         caption: menu,
         contextInfo: imageContextInfo
       },
       { quoted: mek }
     );
 
-    // Optional audio
+    // Send audio if configured
     if (config.MENU_AUDIO_URL) {
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       await conn.sendMessage(
         from,
         {
           audio: { url: config.MENU_AUDIO_URL },
           mimetype: 'audio/mp4',
           ptt: true,
-          contextInfo: imageContextInfo
+          contextInfo: {
+            mentionedJid: [sender],
+            forwardingScore: 999,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+              newsletterName: config.OWNER_NAME || toUpperStylized('popkid'),
+              serverMessageId: 143
+            }
+          }
         },
         { quoted: mek }
       );
@@ -140,6 +157,7 @@ cmd({
 
   } catch (e) {
     console.error('Menu Error:', e.message);
-    await reply(`❌ ${toUpperStylized('Error')}: Menu failed\n${e.message}`);
+    await reply(`❌ ${toUpperStylized('Error')}: Failed to show menu. Try again.\n${toUpperStylized('Details')}: ${e.message}`);
   }
 });
+

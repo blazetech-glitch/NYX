@@ -22,12 +22,12 @@ cmd({
   category: "img_edit",
   use: ".invert [reply to image]",
   filename: __filename
-}, async (conn, message, m, { reply, mek }) => {
+}, async (conn, message, m,  { reply, mek }) => {
   try {
     // Check if quoted message exists and has media
     const quotedMsg = message.quoted ? message.quoted : message;
     const mimeType = (quotedMsg.msg || quotedMsg).mimetype || '';
-
+    
     if (!mimeType || !mimeType.startsWith('image/')) {
       return reply("Please reply to an image file (JPEG/PNG)");
     }
@@ -35,7 +35,7 @@ cmd({
     // Download the media
     const mediaBuffer = await quotedMsg.download();
     const fileSize = formatBytes(mediaBuffer.length);
-
+    
     // Get file extension based on mime type
     let extension = '';
     if (mimeType.includes('image/jpeg')) extension = '.jpg';
@@ -75,7 +75,7 @@ cmd({
 
     await conn.sendMessage(m.chat, {
       image: imageBuffer,
-      caption: `> *powered by NYX*`
+      caption: `> *powered by popkid*`
     });
 
   } catch (error) {

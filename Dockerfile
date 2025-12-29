@@ -1,10 +1,10 @@
 FROM node:lts-buster
 
 # Clone bot from GitHub
-RUN git clone https://github.com/blazetech-glitch/NYX.git /root/nyx-bot
+RUN git clone https://github.com/newwrld-dev/POPKID-XTR.git /root/popkid-xtr-bot
 
 # Set working directory
-WORKDIR /root/nyx-bot
+WORKDIR /root/popkid-xtr-bot
 
 # Install dependencies
 RUN npm install && npm install -g pm2
