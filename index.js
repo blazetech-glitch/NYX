@@ -97,6 +97,26 @@ async function connectToWA() {
     version
   })
 
+  // Load plugins helper (ensure commands register before message handling)
+  let _pluginsLoaded = false;
+  const loadPlugins = () => {
+    if (_pluginsLoaded) return;
+    try {
+      fs.readdirSync('./plugins/').forEach((plugin) => {
+        if (path.extname(plugin).toLowerCase() === '.js') {
+          try { require('./plugins/' + plugin); console.log(`ADDED :° ${plugin}`) } catch (e) { console.error('Plugin load error', plugin, e) }
+        }
+      });
+      _pluginsLoaded = true;
+      console.log('plugins loaded successfully (early load)')
+    } catch (e) {
+      console.error('Failed to load plugins early:', e)
+    }
+  }
+
+  // attempt to load plugins immediately so commands exist for messages
+  loadPlugins();
+
   const { DisconnectReason } = require("@whiskeysockets/baileys");
   const fs = require("fs");
   const path = require("path");
