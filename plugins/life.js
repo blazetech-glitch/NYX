@@ -24,51 +24,60 @@ cmd({
                 return `${h}h ${m}m ${s}s`;
             };
 
-            const startTime = Date.now();
             const responseTime = Date.now() - mek.messageTimestamp * 1000;
 
+            // 🌟 BEAUTIFUL STATUS CARD
             const captionText = `
-*┏────〘 NYX 〙───⊷*
-*┃* ʙᴏᴛ ᴜᴘᴛɪᴍᴇ: ${uptime()}
-*┃* ᴀᴄᴛɪᴠᴇ ᴜsᴇʀs: ${Object.keys(conn.chats).length}
-*┃* ʏᴏᴜʀ ɴᴜᴍʙᴇʀ: ${sender.split('@')[0]}
-*┃* ᴠᴇʀsɪᴏɴ: ${config.version || '1.0.0'}
-*┃* ᴍᴇᴍᴏʀʏ ᴜsᴀɢᴇ: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB
-*┗──────────────⊷
+╔═══════════════╗
+   🔮  NYX ᴍᴅ  🔮
+╚═══════════════╝
+╭───────────────────⟡
+│ ⏱️ ʙᴏᴛ ᴜᴘᴛɪᴍᴇ : ${uptime()}
+│ 👥 ᴀᴄᴛɪᴠᴇ ᴄʜᴀᴛs : ${Object.keys(conn.chats).length}
+│ 👤 ʏᴏᴜʀ ɴᴜᴍʙᴇʀ : ${sender.split('@')[0]}
+│ 🧩 ᴛᴏᴛᴀʟ ᴄᴍᴅs : ${totalCmds}
+│ 💾 ᴍᴇᴍᴏʀʏ : ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB
+│ 🚀 ᴠᴇʀsɪᴏɴ : ${config.version || '1.0.0'}
+╰───────────────────⟡
 
-> *▫️NYX MD MAIN*
-> sᴛᴀᴛᴜs: ONLINE ✅
-> ʀᴇsᴘᴏɴᴅ ᴛɪᴍᴇ: ${responseTime}ms`;
+╭═══════════════⟡
+│ 🟢 sᴛᴀᴛᴜs : ᴏɴʟɪɴᴇ
+│ ⚡ ʀᴇsᴘᴏɴsᴇ : ${responseTime} ms
+│ 🧠 sʏsᴛᴇᴍ : sᴛᴀʙʟᴇ
+╰═══════════════⟡
+
+✨ *ɴʏx ᴍᴅ ɪs ᴀʟɪᴠᴇ & ʀᴇᴀᴅʏ!* ✨
+`;
 
             const aliveMessage = {
                 image: { url: "https://files.catbox.moe/rw0yfd.png" },
-                caption: `> ᴀᴍ ᴀʟɪᴠᴇ ɴ ᴋɪᴄᴋɪɴɢ 🥳\n\n${captionText}`,
+                caption: captionText,
                 buttons: [
                     {
                         buttonId: `${config.PREFIX}menu_action`,
-                        buttonText: { displayText: '📂 ᴍᴇɴᴜ ᴏᴘᴛɪᴏɴ' },
+                        buttonText: { displayText: '📂 ᴍᴇɴᴜ ᴏᴘᴛɪᴏɴs' },
                         type: 4,
                         nativeFlowInfo: {
                             name: 'single_select',
                             paramsJson: JSON.stringify({
-                                title: 'ᴄʟɪᴄᴋ ʜᴇʀᴇ ❏',
+                                title: '✨ ᴄʜᴏᴏsᴇ ᴀɴ ᴀᴄᴛɪᴏɴ',
                                 sections: [
                                     {
-                                        title: `NYX MD BOT`,
-                                        highlight_label: 'Quick Actions',
+                                        title: `👑 NYX MD MAIN`,
+                                        highlight_label: 'Quick Access',
                                         rows: [
-                                            { title: '📋 ғᴜʟʟ ᴍᴇɴᴜ', description: 'ᴠɪᴇᴡ ᴀʟʟ ᴀᴠᴀɪʟᴀʙʟᴇ ᴄᴍᴅs', id: `${config.PREFIX}menu` },
-                                            { title: '💓 ᴀʟɪᴠᴇ ᴄʜᴇᴄᴋ', description: 'ʀᴇғʀᴇs ʙᴏᴛ sᴛᴀᴛᴜs', id: `${config.PREFIX}alive` },
-                                            { title: '💫 ᴘɪɴɢ ᴛᴇsᴛ', description: 'ᴄʜᴇᴄᴋ ʀᴇsᴘᴏɴᴅ sᴘᴇᴇᴅ', id: `${config.PREFIX}ping` }
+                                            { title: '📋 ғᴜʟʟ ᴍᴇɴᴜ', description: 'ᴠɪᴇᴡ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs', id: `${config.PREFIX}menu` },
+                                            { title: '💓 ᴀʟɪᴠᴇ ᴄʜᴇᴄᴋ', description: 'ʀᴇғʀᴇsʜ sᴛᴀᴛᴜs', id: `${config.PREFIX}alive` },
+                                            { title: '⚡ ᴘɪɴɢ ᴛᴇsᴛ', description: 'ᴄʜᴇᴄᴋ sᴘᴇᴇᴅ', id: `${config.PREFIX}ping` }
                                         ]
                                     },
                                     {
-                                        title: "ϙᴜɪᴄᴋ ᴄᴍᴅs",
-                                        highlight_label: 'Popular',
+                                        title: "🔥 ᴘᴏᴘᴜʟᴀʀ ᴄᴍᴅs",
+                                        highlight_label: 'Trending',
                                         rows: [
-                                            { title: '🤖 ᴀɪ ᴄʜᴀᴛ', description: 'Start AI conversation', id: `${config.PREFIX}ai Hello!` },
-                                            { title: '🎵 ᴍᴜsɪᴄ sᴇᴀʀᴄʜ', description: 'Download your favorite songs', id: `${config.PREFIX}song` },
-                                            { title: '📰 ʟᴀᴛᴇsᴛ ɴᴇᴡs', description: 'Get current news updates', id: `${config.PREFIX}news` }
+                                            { title: '🤖 ᴀɪ ᴄʜᴀᴛ', description: 'Chat with AI', id: `${config.PREFIX}ai Hello!` },
+                                            { title: '🎵 ᴍᴜsɪᴄ sᴇᴀʀᴄʜ', description: 'Download music', id: `${config.PREFIX}song` },
+                                            { title: '📰 ʟᴀᴛᴇsᴛ ɴᴇᴡs', description: 'Get news updates', id: `${config.PREFIX}news` }
                                         ]
                                     }
                                 ]
@@ -76,7 +85,7 @@ cmd({
                         }
                     },
                     { buttonId: `${config.PREFIX}bot_info`, buttonText: { displayText: 'ℹ️ ʙᴏᴛ ɪɴғᴏ' }, type: 1 },
-                    { buttonId: `${config.PREFIX}bot_stats`, buttonText: { displayText: '📈 ʙᴏᴛ sᴛᴀᴛs' }, type: 1 }
+                    { buttonId: `${config.PREFIX}bot_stats`, buttonText: { displayText: '📊 ʙᴏᴛ sᴛᴀᴛs' }, type: 1 }
                 ],
                 headerType: 1,
                 viewOnce: true
@@ -97,13 +106,17 @@ cmd({
 
             await conn.sendMessage(from, {
                 image: { url: "https://files.catbox.moe/rw0yfd.png" },
-                caption: `*🤖 NYX MD ALIVE*\n\n` +
-                    `*┏────〘 NYX 〙───⊷*\n` +
-                    `*┃* ᴜᴘᴛɪᴍᴇ: ${uptime()}\n` +
-                    `*┃* sᴛᴀᴛᴜs: ᴏɴʟɪɴᴇ\n` +
-                    `*┃* ɴᴜᴍʙᴇʀ: ${sender.split('@')[0]}\n` +
-                    `*┗──────────────⊷*\n\n` +
-                    `Type *${config.PREFIX}menu* for commands`
+                caption: `
+╔═══════════════╗
+   ⚠️  NYX ᴍᴅ  ⚠️
+╚═══════════════╝
+│ ⏱️ ᴜᴘᴛɪᴍᴇ : ${uptime()}
+│ 🟢 sᴛᴀᴛᴜs : ᴏɴʟɪɴᴇ
+│ 👤 ɴᴜᴍʙᴇʀ : ${sender.split('@')[0]}
+╰───────────────────⟡
+
+Type *${config.PREFIX}menu* to explore commands 👑
+`
             }, { quoted: mek });
         }
     });
