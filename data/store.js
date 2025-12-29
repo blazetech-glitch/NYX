@@ -203,16 +203,16 @@ const saveMessageV2 = (message) => {
 };
 
 module.exports = {
-    saveContact,
-    loadMessage,
-    getName,
-    getChatSummary,
-    saveGroupMetadata,
-    getGroupMetadata,
-    saveMessageCount,
-    getInactiveGroupMembers,
-    getGroupMembersMessageCount,
-    saveMessage: saveMessageV2,
+  saveContact,
+  loadMessage,
+  getName,
+  getChatSummary,
+  saveGroupMetadata,
+  getGroupMetadata,
+  saveMessageCount,
+  getInactiveGroupMembers,
+  getGroupMembersMessageCount,
+  saveMessage: saveMessageV2,
 };
 
-// codes by popkid
+// codes by NYX

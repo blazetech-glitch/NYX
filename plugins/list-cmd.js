@@ -21,7 +21,7 @@ cmd({
         // Get unique categories count
         const categories = [...new Set(Object.values(commands).map(c => c.category))]
 
-        let menuText = `*┏────〘 popkid xtr 〙───⊷*
+        let menuText = `*┏────〘 NYX XTR 〙───⊷*
 *┃* *🛠️ BOT INFORMATION*
 *┃* • 🤖 Bot Name: ${config.BOT_NAME}
 *┃* • 👑 Owner: ${config.OWNER_NAME}
@@ -61,7 +61,7 @@ cmd({
                 }
                 menuText += `*┃*\n`
             })
-            
+
             menuText += `*┗──────────────⊷*\n`
         }
 
