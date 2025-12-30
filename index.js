@@ -449,7 +449,9 @@ async function connectToWA() {
           let buffer = null;
           try { buffer = ppUrl ? await getBuffer(ppUrl) : null } catch (e) { buffer = null }
 
-          const welcomeMsg = `🌟 *Welcome ${displayName}* 🌟\n\n👋 Hello @${userId.split('@')[0]}!\nYou joined *${groupName || 'this group'}*\n${groupDesc ? '\n📝 Description: ' + groupDesc + '\n' : ''}\nPlease introduce yourself — we hope you enjoy your stay! 🎉`;
+          const memberCount = (groupMeta && groupMeta.participants) ? groupMeta.participants.length : 0;
+
+          const welcomeMsg = `🌟 *Welcome ${displayName}* 🌟\n\n👋 Hello @${userId.split('@')[0]}!\nYou joined *${groupName || 'this group'}*\n${groupDesc ? '\n📝 Description: ' + groupDesc + '\n' : ''}\n👥 Total members: ${memberCount}\n\nPlease introduce yourself — we hope you enjoy your stay! 🎉`;
 
           await conn.sendMessage(groupId, {
             image: buffer ? buffer : { url: config.MENU_IMAGE_URL },
@@ -465,7 +467,9 @@ async function connectToWA() {
           let buffer = null;
           try { buffer = ppUrl ? await getBuffer(ppUrl) : null } catch (e) { buffer = null }
 
-          const goodbyeMsg = `😢 *Goodbye ${displayName}* 😢\n\nWe are sad to see @${userId.split('@')[0]} leave *${groupName || 'this group'}*.\nWe will miss you! 💔`;
+          const memberCount = (groupMeta && groupMeta.participants) ? groupMeta.participants.length : 0;
+
+          const goodbyeMsg = `😢 *Goodbye ${displayName}* 😢\n\nWe are sad to see @${userId.split('@')[0]} leave *${groupName || 'this group'}*.\n👥 Total members now: ${memberCount}\nWe will miss you! 💔`;
 
           await conn.sendMessage(groupId, {
             image: buffer ? buffer : { url: config.MENU_IMAGE_URL },
