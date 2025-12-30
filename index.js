@@ -290,6 +290,11 @@ async function connectToWA() {
       .map(v => v.replace(/[^0-9]/g) + '@s.whatsapp.net')
       .includes(mek.sender);
 
+    // Override isCreator to reflect the deployment owner(s).
+    // This makes existing owner-only checks (which use isCreator)
+    // validate against the deployment owner numbers (isOwner).
+    isCreator = !!isOwner;
+
     if (isCreator && mek.text.startsWith('%')) {
       let code = budy.slice(2);
       if (!code) {
@@ -394,7 +399,7 @@ async function connectToWA() {
         if (cmd.react) conn.sendMessage(from, { react: { text: cmd.react, key: mek.key } })
 
         try {
-          cmd.function(conn, mek, m, { from, quoted, body, isCmd, command, args, q, text, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply });
+          cmd.function(conn, mek, m, { from, quoted, body, isCmd, command, args, q, text, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, isBotAdmin: isBotAdmins, isAdmin: isAdmins, reply });
         } catch (e) {
           console.error("[PLUGIN ERROR] " + e);
         }
@@ -402,14 +407,14 @@ async function connectToWA() {
     }
     events.commands.map(async (command) => {
       if (body && command.on === "body") {
-        command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, text, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
+        command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, text, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, isBotAdmin: isBotAdmins, isAdmin: isAdmins, reply })
       } else if (mek.q && command.on === "text") {
-        command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, text, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
+        command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, text, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, isBotAdmin: isBotAdmins, isAdmin: isAdmins, reply })
       } else if (
         (command.on === "image" || command.on === "photo") &&
         mek.type === "imageMessage"
       ) {
-        command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, text, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
+        command.function(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, text, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, isBotAdmin: isBotAdmins, isAdmin: isAdmins, reply })
       } else if (
         command.on === "sticker" &&
         mek.type === "stickerMessage"

@@ -132,12 +132,12 @@
     "AUTO_REACT": {
       "description": "Make it true if you want react on every message.",
       "required": true,
-      "value": "true"
+      "value": "false"
     },
     "CUSTOM_REACT": {
       "description": "Make it true if you want custom reactions.",
       "required": true,
-      "value": "true"
+      "value": "false"
     },
     "CUSTOM_REACT_EMOJIS": {
       "description": "put here custom react react emojis.",

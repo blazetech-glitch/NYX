@@ -70,6 +70,15 @@ cmd({
 │ 🚀 ᴠᴇʀꜱɪᴏɴ : 2.0.0
 ╰───────────────────⟡`;
 
+  // Quick commands highlight
+  menu += `
+
+╭──────── Quick Commands ────────⟡
+│ ✦ ${prefix}menu  - Show commands
+│ ✦ ${prefix}alive - Bot status
+│ ✦ ${prefix}pin  - Pin a replied message
+╰───────────────────────────────⟡`;
+
     // Group commands by category
     const categories = {};
     for (const cmd of commands) {
