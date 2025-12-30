@@ -12,7 +12,7 @@ try { profiles = JSON.parse(fs.readFileSync(profilesFile, 'utf8') || '{}') } cat
 function saveProfiles() { fs.writeFileSync(profilesFile, JSON.stringify(profiles, null, 2)) }
 
 // translate <text> <lang>
-cmd({ pattern: 'translate', desc: 'Translate text to target language', filename: __filename }, async (conn, mek, m, { args, reply, from }) => {
+cmd({ pattern: 'translate', desc: 'Translate text to target language', category: 'utility', filename: __filename }, async (conn, mek, m, { args, reply, from }) => {
     const text = args.slice(0, -1).join(' ');
     const lang = args.slice(-1)[0];
     if (!text || !lang) return reply('Usage: .translate <text> <lang_code>');
@@ -24,7 +24,7 @@ cmd({ pattern: 'translate', desc: 'Translate text to target language', filename:
 });
 
 // serverinfo (for groups show metadata, otherwise process/server info)
-cmd({ pattern: 'serverinfo', desc: 'Show server / group info', filename: __filename }, async (conn, mek, m, { from, isGroup, reply }) => {
+cmd({ pattern: 'serverinfo', desc: 'Show server / group info', category: 'system', filename: __filename }, async (conn, mek, m, { from, isGroup, reply }) => {
     try {
         if (isGroup) {
             const meta = await conn.groupMetadata(from).catch(() => ({}));
@@ -40,7 +40,7 @@ cmd({ pattern: 'serverinfo', desc: 'Show server / group info', filename: __filen
 });
 
 // avatar [@user]
-cmd({ pattern: 'avatar', desc: "Display a user's avatar", filename: __filename }, async (conn, mek, m, { args, reply, isGroup }) => {
+cmd({ pattern: 'avatar', desc: "Display a user's avatar", category: 'media', filename: __filename }, async (conn, mek, m, { args, reply, isGroup }) => {
     try {
         let jid = mek.quoted && mek.quoted.sender ? mek.quoted.sender : (args[0] ? (args[0].includes('@') ? args[0] : args[0] + '@s.whatsapp.net') : mek.sender);
         jid = jid.replace(/\s/g, '');
@@ -52,7 +52,7 @@ cmd({ pattern: 'avatar', desc: "Display a user's avatar", filename: __filename }
 });
 
 // weather <city>
-cmd({ pattern: 'weather', desc: 'Get weather for city', filename: __filename }, async (conn, mek, m, { args, reply }) => {
+cmd({ pattern: 'weather', desc: 'Get weather for city', category: 'utility', filename: __filename }, async (conn, mek, m, { args, reply }) => {
     const city = args.join(' ');
     if (!city) return reply('Usage: .weather <city>');
     try {
@@ -74,7 +74,7 @@ function parseDuration(s) {
     const mult = { s: 1000, m: 60000, h: 3600000, d: 86400000 }[unit];
     return n * mult;
 }
-cmd({ pattern: 'remind', desc: 'Set a reminder: .remind 10m Take a break', filename: __filename }, async (conn, mek, m, { args, reply }) => {
+cmd({ pattern: 'remind', desc: 'Set a reminder: .remind 10m Take a break', category: 'utility', filename: __filename }, async (conn, mek, m, { args, reply }) => {
     const t = args[0];
     const msg = args.slice(1).join(' ');
     if (!t || !msg) return reply('Usage: .remind <time> <message> (e.g., 10m)');
@@ -89,7 +89,7 @@ cmd({ pattern: 'remind', desc: 'Set a reminder: .remind 10m Take a break', filen
 });
 
 // timer <time>
-cmd({ pattern: 'timer', desc: 'Set a countdown timer like 10s, 5m', filename: __filename }, async (conn, mek, m, { args, reply }) => {
+cmd({ pattern: 'timer', desc: 'Set a countdown timer like 10s, 5m', category: 'utility', filename: __filename }, async (conn, mek, m, { args, reply }) => {
     const t = args[0];
     if (!t) return reply('Usage: .timer 10s');
     const ms = parseDuration(t);
@@ -99,7 +99,7 @@ cmd({ pattern: 'timer', desc: 'Set a countdown timer like 10s, 5m', filename: __
 });
 
 // calc <expression>
-cmd({ pattern: 'calc', desc: 'Evaluate math expression', filename: __filename }, async (conn, mek, m, { args, reply }) => {
+cmd({ pattern: 'calc', desc: 'Evaluate math expression', category: 'math', filename: __filename }, async (conn, mek, m, { args, reply }) => {
     const expr = args.join(' ');
     if (!expr) return reply('Usage: .calc 2+2*3');
     if (!/^[0-9+\-*/().% ^\s]+$/.test(expr)) return reply('Invalid characters in expression');
@@ -111,7 +111,7 @@ cmd({ pattern: 'calc', desc: 'Evaluate math expression', filename: __filename },
 });
 
 // ocr (image must be quoted)
-cmd({ pattern: 'ocr', desc: 'Extract text from quoted image', filename: __filename }, async (conn, mek, m, { reply }) => {
+cmd({ pattern: 'ocr', desc: 'Extract text from quoted image', category: 'utility', filename: __filename }, async (conn, mek, m, { reply }) => {
     try {
         const q = mek.quoted && mek.quoted.message ? mek.quoted : null;
         if (!q || !q.message.imageMessage) return reply('Reply to an image with .ocr');
@@ -127,13 +127,13 @@ cmd({ pattern: 'ocr', desc: 'Extract text from quoted image', filename: __filena
 });
 
 // profile, setbio (simple local profiles)
-cmd({ pattern: 'profile', desc: 'Show user profile', filename: __filename }, async (conn, mek, m, { args, reply }) => {
+cmd({ pattern: 'profile', desc: 'Show user profile', category: 'profile', filename: __filename }, async (conn, mek, m, { args, reply }) => {
     const jid = args[0] ? (args[0].includes('@') ? args[0] : args[0] + '@s.whatsapp.net') : mek.sender;
     const p = profiles[jid] || {};
     reply(`Profile for ${jid.split('@')[0]}:\nBio: ${p.bio || 'N/A'}\nXP: ${p.xp || 0}\nLevel: ${p.level || 0}`);
 });
 
-cmd({ pattern: 'setbio', desc: 'Set your bio in profile', filename: __filename }, async (conn, mek, m, { args, reply }) => {
+cmd({ pattern: 'setbio', desc: 'Set your bio in profile', category: 'profile', filename: __filename }, async (conn, mek, m, { args, reply }) => {
     const bio = args.join(' ');
     if (!bio) return reply('Usage: .setbio <text>');
     const jid = mek.sender;
@@ -144,5 +144,5 @@ cmd({ pattern: 'setbio', desc: 'Set your bio in profile', filename: __filename }
 });
 
 // lightweight stubs for many other commands the user listed
-const stub = (name, desc) => cmd({ pattern: name, desc, filename: __filename }, async (conn, mek, m, { reply }) => reply(`${name} is not implemented in this build yet.`));
+const stub = (name, desc) => cmd({ pattern: name, desc, category: 'fun', filename: __filename }, async (conn, mek, m, { reply }) => reply(`${name} is not implemented in this build yet.`));
 ['voiceai', 'deepfake', 'faceblur', 'cartoonize', 'animefy', 'pixelate', 'colorize', 'removebg', 'stickerify', 'memeify', 'caption', 'watermark', 'resize', 'fakeban', 'fakekick', 'fakemessage', 'ghosttext', 'glitchtext', 'zalgo', 'ascii', 'emojify', 'reverse', 'spoiler', 'predict', 'luck', 'iqtest', 'personality', 'compatibility', 'future', 'ship', 'mood', 'truthmeter', 'namegenerator', 'avatar', 'timer'].forEach(n => stub(n, `Stub for ${n}`));
