@@ -12,14 +12,53 @@ try { profiles = JSON.parse(fs.readFileSync(profilesFile, 'utf8') || '{}') } cat
 function saveProfiles() { fs.writeFileSync(profilesFile, JSON.stringify(profiles, null, 2)) }
 
 // translate <text> <lang>
-cmd({ pattern: 'translate', desc: 'Translate text to target language', category: 'utility', filename: __filename }, async (conn, mek, m, { args, reply, from }) => {
-    const text = args.slice(0, -1).join(' ');
-    const lang = args.slice(-1)[0];
-    if (!text || !lang) return reply('Usage: .translate <text> <lang_code>');
+cmd({ pattern: 'translate', alias: ['tr'], desc: 'Translate text to target language (accepts name or code)', category: 'utility', filename: __filename }, async (conn, mek, m, { args, reply, from }) => {
+    if (!args || args.length < 2) return reply('Usage: .translate <text> <lang>\nExample: .translate Hello fr OR .translate Hello | french');
+
+    // allow separators like '|' or '=>' to separate text and lang
+    const joined = args.join(' ');
+    let text, langArg;
+    if (joined.includes('|')) {
+        [text, langArg] = joined.split('|').map(s => s.trim());
+    } else if (joined.includes('=>')) {
+        [text, langArg] = joined.split('=>').map(s => s.trim());
+    } else if (joined.includes('->')) {
+        [text, langArg] = joined.split('->').map(s => s.trim());
+    } else {
+        langArg = args[args.length - 1];
+        text = args.slice(0, -1).join(' ');
+    }
+
+    if (!text || !langArg) return reply('Usage: .translate <text> <lang>');
+
+    const langMap = {
+        english: 'en', en: 'en', french: 'fr', fr: 'fr', spanish: 'es', es: 'es', german: 'de', de: 'de', portuguese: 'pt', pt: 'pt', italian: 'it', it: 'it', arabic: 'ar', ar: 'ar', hindi: 'hi', hi: 'hi', swahili: 'sw', sw: 'sw', chinese: 'zh', zh: 'zh', 'zh-cn': 'zh', 'zh-tw': 'zh', japanese: 'ja', ja: 'ja', russian: 'ru', ru: 'ru', korean: 'ko', ko: 'ko'
+    };
+
+    const targ = langMap[langArg.toLowerCase()] || langArg.toLowerCase();
+
     try {
-        const res = await axios.get('https://api.mymemory.translated.net/get', { params: { q: text, langpair: `auto|${lang}` } });
-        const translated = res.data.responseData.translatedText || 'No result';
-        reply(`Translated (${lang}):\n${translated}`);
+        // Try LibreTranslate first
+        const res = await axios.post('https://libretranslate.de/translate', {
+            q: text,
+            source: 'auto',
+            target: targ,
+            format: 'text'
+        }, { headers: { 'accept': 'application/json', 'Content-Type': 'application/json' }, timeout: 15000 });
+
+        if (res && res.data && res.data.translatedText) {
+            return reply(`Translated (${targ}):\n${res.data.translatedText}`);
+        }
+    } catch (err) {
+        // ignore and fallback
+    }
+
+    // Fallback to MyMemory
+    try {
+        const res2 = await axios.get('https://api.mymemory.translated.net/get', { params: { q: text, langpair: `auto|${targ}` }, timeout: 15000 });
+        const translated = res2.data?.responseData?.translatedText || null;
+        if (translated) return reply(`Translated (${targ}):\n${translated}`);
+        return reply('No translation result.');
     } catch (e) { reply('Translate error: ' + (e.message || e)) }
 });
 
