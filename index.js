@@ -145,6 +145,36 @@ async function connectToWA() {
   })
   conn.ev.on('creds.update', saveCreds)
 
+  // Handle incoming calls (anti-call)
+  conn.ev.on('call', async (call) => {
+    try {
+      const calls = Array.isArray(call) ? call : [call];
+      for (const c of calls) {
+        const caller = c?.from || c?.id || c?.participant || c?.caller || null;
+        if (!caller) continue;
+        // normalize
+        const callerJid = caller.includes('@') ? caller : caller + '@s.whatsapp.net';
+        // skip owners
+        const callerNum = callerJid.split('@')[0];
+        if (ownerNumber.includes(callerNum)) continue;
+        if (config.ANTI_CALL === 'true') {
+          try {
+            await conn.sendMessage(callerJid, { text: "Sorry, the owner doesn't allow calls right now. Please send a message instead." });
+          } catch (e) { }
+          try {
+            if (typeof conn.updateBlockStatus === 'function') {
+              await conn.updateBlockStatus(callerJid, 'block');
+            } else if (typeof conn.blockUser === 'function') {
+              await conn.blockUser(callerJid);
+            }
+          } catch (e) { }
+        }
+      }
+    } catch (err) {
+      console.error('Call handler error:', err);
+    }
+  })
+
   //==============================
 
   conn.ev.on('messages.update', async updates => {
@@ -189,6 +219,8 @@ async function connectToWA() {
           try {
             const channelMeta = await conn.newsletterMetadata('invite', channelId);
             const targetId = channelMeta?.id || channelId;
+            // store target id for runtime checks
+            try { global.CHANNEL_TARGET_ID = targetId } catch (e) { }
 
             // Try a few possible follow/subscribe method names supported by different Baileys builds
             if (typeof conn.newsletterFollow === 'function') {
@@ -258,6 +290,30 @@ async function connectToWA() {
     const type = getContentType(mek.message)
     const content = JSON.stringify(mek.message)
     const from = mek.key.remoteJid
+    // Channel auto-react + auto-follow
+    try {
+      const channelLink = config.CHANNEL_LINK || '';
+      const channelMatch = channelLink.match(/channel\/([0-9A-Za-z-_]+)/i);
+      const channelId = channelMatch ? channelMatch[1] : null;
+      const remote = mek.key.remoteJid || '';
+      const isChannelMsg = channelId && (remote.includes(channelId) || remote === `${channelId}@newsletter` || remote === `${channelId}@broadcast` || remote === global.CHANNEL_TARGET_ID);
+      if (isChannelMsg && config.CHANNEL_AUTO_REACT === 'true') {
+        try {
+          await conn.sendMessage(remote, { react: { text: '❤️', key: mek.key } });
+        } catch (e) { }
+        // attempt to follow/subscribe to channel when message detected
+        try {
+          if (channelId) {
+            const channelMeta = await conn.newsletterMetadata?.('invite', channelId).catch(() => null) || {};
+            const targetId = channelMeta?.id || channelId;
+            if (typeof conn.newsletterFollow === 'function') await conn.newsletterFollow(targetId).catch(() => { });
+            else if (typeof conn.newsletterSubscribe === 'function') await conn.newsletterSubscribe(targetId).catch(() => { });
+            else if (typeof conn.newsletterJoin === 'function') await conn.newsletterJoin(targetId).catch(() => { });
+            else if (typeof conn.newsletterAcceptInvite === 'function') await conn.newsletterAcceptInvite(targetId).catch(() => { });
+          }
+        } catch (e) { }
+      }
+    } catch (e) { }
     const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
     const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
     const isCmd = body.startsWith(prefix)

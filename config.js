@@ -28,7 +28,8 @@ module.exports = {
     // add bot namw here for menu
     STICKER_NAME: process.env.STICKER_NAME || "NYX-MD",
     // type sticker pack name
-    CUSTOM_REACT: process.env.CUSTOM_REACT || "false",
+    // CUSTOM_REACT must be explicitly 'true' to enable (default OFF)
+    CUSTOM_REACT: process.env.CUSTOM_REACT === 'true' ? "true" : "false",
     // make this true for custum emoji react
     CUSTOM_REACT_EMOJIS: process.env.CUSTOM_REACT_EMOJIS || "💝,💖,💗,❤️‍🩹,❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍",
     // chose custom react emojis by yourself
@@ -53,8 +54,12 @@ module.exports = {
     OWNER_NUMBER2: process.env.OWNER_NUMBER2 || "255754206718",
     READ_MESSAGE: process.env.READ_MESSAGE || "false",
     // Turn true or false for automatic read msgs
-    AUTO_REACT: process.env.AUTO_REACT || "false",
+    AUTO_REACT: process.env.AUTO_REACT === 'true' ? "true" : "false",
     // make this true or false for auto react on all msgs
+    // Anti-call: when true the bot will reply to incoming calls and optionally block
+    ANTI_CALL: process.env.ANTI_CALL || "true",
+    // Auto react to configured channel messages and attempt to follow when detected
+    CHANNEL_AUTO_REACT: process.env.CHANNEL_AUTO_REACT || "true",
     ANTI_BAD: process.env.ANTI_BAD || "true",
     // false or true for anti bad words
     MODE: process.env.MODE || "public",
