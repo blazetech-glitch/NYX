@@ -48,6 +48,8 @@ module.exports = {
     // Newsletter and links
     NEWSLETTER_JID: process.env.NEWSLETTER_JID || '120363424512102809@newsletter',
     CHANNEL_LINK: process.env.CHANNEL_LINK || 'https://whatsapp.com/channel/0029VbC49Bb2P59togOaEF2E',
+    // control auto follow on connect (must be 'true' to enable)
+    CHANNEL_AUTO_FOLLOW: process.env.CHANNEL_AUTO_FOLLOW === 'true' ? "true" : "false",
     GROUP_LINK: process.env.GROUP_LINK || 'https://chat.whatsapp.com/IrmNcI7Wn0C4bdLC70xVPJ',
     DEFAULT_GROUP_JID: process.env.DEFAULT_GROUP_JID || '120363406591837257@g.us',
     // secondary owner (used by .owner and internal checks)
@@ -58,8 +60,8 @@ module.exports = {
     // make this true or false for auto react on all msgs
     // Anti-call: when true the bot will reply to incoming calls and optionally block
     ANTI_CALL: process.env.ANTI_CALL || "true",
-    // Auto react to configured channel messages and attempt to follow when detected
-    CHANNEL_AUTO_REACT: process.env.CHANNEL_AUTO_REACT || "true",
+    // Auto react to configured channel messages and attempt to follow when detected (default OFF)
+    CHANNEL_AUTO_REACT: process.env.CHANNEL_AUTO_REACT === 'true' ? "true" : "false",
     ANTI_BAD: process.env.ANTI_BAD || "true",
     // false or true for anti bad words
     MODE: process.env.MODE || "public",
