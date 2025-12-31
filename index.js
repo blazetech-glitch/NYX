@@ -141,6 +141,16 @@ async function connectToWA() {
 > *Report any error to the dev*
                                   `;
       conn.sendMessage(conn.user.id, { image: { url: `https://files.catbox.moe/rw0yfd.png` }, caption: up })
+      // If ALWAYS_ONLINE is enabled, set presence to available for the bot
+      if (config.ALWAYS_ONLINE === 'true') {
+        try {
+          const myJid = conn.user && conn.user.id ? conn.user.id : null;
+          if (myJid && typeof conn.sendPresenceUpdate === 'function') {
+            await conn.sendPresenceUpdate('available', myJid).catch(() => { });
+            console.log('ℹ️ ALWAYS_ONLINE enabled — presence set to available.');
+          }
+        } catch (e) { }
+      }
     }
   })
   conn.ev.on('creds.update', saveCreds)
