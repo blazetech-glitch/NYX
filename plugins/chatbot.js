@@ -36,6 +36,8 @@ cmd({ pattern: '', on: 'body', desc: 'Chatbot handler (auto)', filename: __filen
         const jid = from;
         if (!store[jid]) return; // not enabled for this chat
         if (!body) return;
+        // ignore messages sent by the bot itself to avoid loops
+        if (mek && mek.key && mek.key.fromMe) return;
         // avoid commands
         if (isCmd) return;
         // If in group, only respond when bot is mentioned or reply-to-bot
@@ -47,6 +49,7 @@ cmd({ pattern: '', on: 'body', desc: 'Chatbot handler (auto)', filename: __filen
         }
 
         // call AI endpoint (reuse existing public GPT proxy)
+        // use the sender's text as the query
         const q = body;
         const apiUrl = `https://lance-frank-asta.onrender.com/api/gpt?q=${encodeURIComponent(q)}`;
         const { data } = await axios.get(apiUrl, { timeout: 20000 }).catch(() => ({}));
