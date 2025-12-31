@@ -9,19 +9,19 @@ function isEnabled(value) {
 
 cmd({
     pattern: "config",
-    alias: ["varlist", "envlist"],
+    alias: ["varlist", "envlist", "getsettings", "settings"],
     desc: "Show all bot configuration variables (Owner Only)",
     category: "system",
     react: "⚙️",
     filename: __filename
-}, 
-async (conn, mek, m, { from, quoted, reply, isCreator }) => {
-    try {
-        if (!isCreator) {
-            return reply("🚫 *Owner Only Command!* You're not authorized to view bot configurations.");
-        }
+},
+    async (conn, mek, m, { from, quoted, reply, isCreator }) => {
+        try {
+            if (!isCreator) {
+                return reply("🚫 *Owner Only Command!* You're not authorized to view bot configurations.");
+            }
 
-        let envSettings = `
+            let envSettings = `
 ╭───『 *${config.BOT_NAME} CONFIG* 』───❏
 │
 ├─❏ *🤖 BOT INFO*
@@ -71,22 +71,22 @@ async (conn, mek, m, { from, quoted, reply, isCreator }) => {
 ╰───『 *${config.DESCRIPTION}* 』───❏
 `;
 
-        await conn.sendMessage(
-            from,
-            {
-                image: { url: config.MENU_IMAGE_URL },
-                caption: envSettings,
-                contextInfo: {
-                    mentionedJid: [m.sender],
-                    forwardingScore: 999,
-                    isForwarded: true
-                }
-            },
-            { quoted: mek }
-        );
+            await conn.sendMessage(
+                from,
+                {
+                    image: { url: config.MENU_IMAGE_URL },
+                    caption: envSettings,
+                    contextInfo: {
+                        mentionedJid: [m.sender],
+                        forwardingScore: 999,
+                        isForwarded: true
+                    }
+                },
+                { quoted: mek }
+            );
 
-    } catch (error) {
-        console.error('Env command error:', error);
-        reply(`❌ Error displaying config: ${error.message}`);
-    }
-});
+        } catch (error) {
+            console.error('Env command error:', error);
+            reply(`❌ Error displaying config: ${error.message}`);
+        }
+    });

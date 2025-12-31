@@ -60,6 +60,8 @@ module.exports = {
     // make this true or false for auto react on all msgs
     // Anti-call: when true the bot will reply to incoming calls and optionally block
     ANTI_CALL: process.env.ANTI_CALL || "true",
+    // Anti-bug protections (detect suspicious payloads/messages). Default OFF.
+    ANTI_BUG: process.env.ANTI_BUG === 'true' ? "true" : "false",
     // Auto react to configured channel messages and attempt to follow when detected (default OFF)
     CHANNEL_AUTO_REACT: process.env.CHANNEL_AUTO_REACT === 'true' ? "true" : "false",
     ANTI_BAD: process.env.ANTI_BAD || "true",
