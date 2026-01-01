@@ -43,23 +43,6 @@ const Crypto = require('crypto')
 const path = require('path')
 const prefix = config.PREFIX
 
-// Silence non-error console output when requested
-// Enable by setting env var `SILENT=true` or `config.SILENT = "true"` in `config.js`
-if (process.env.SILENT === 'true' || config.SILENT === 'true') {
-  console.log = () => {};
-  console.info = () => {};
-  console.debug = () => {};
-  console.trace = () => {};
-}
-
-// Global error handlers to capture crashes and provide stack traces
-process.on('uncaughtException', (err) => {
-  console.error('UNCAUGHT EXCEPTION:', err && err.stack ? err.stack : err);
-});
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('UNHANDLED REJECTION at:', promise, 'reason:', reason && reason.stack ? reason.stack : reason);
-});
-
 const ownerNumber = ['255627417402', '255754206718']
 
 const tempDir = path.join(os.tmpdir(), 'cache-temp')
@@ -435,6 +418,61 @@ async function connectToWA() {
       }
     });
 
+  });
+  //===================================================   
+  // Welcome / Goodbye messages for group participants
+  conn.ev.on('group-participants.update', async (update) => {
+    try {
+      const { id, participants, action } = update;
+      const groupId = id;
+      const groupMeta = await conn.groupMetadata(groupId).catch(() => ({}));
+      const groupName = (groupMeta && groupMeta.subject) ? groupMeta.subject : '';
+      const groupDesc = (groupMeta && groupMeta.desc) ? groupMeta.desc : '';
+
+      for (const user of participants) {
+        const userId = user;
+        let displayName = userId.split('@')[0];
+        try {
+          const v = await conn.getName(userId);
+          if (v) displayName = v;
+        } catch (e) { }
+
+        if (action === 'add') {
+          if (config.WELCOME === 'false') continue;
+          let ppUrl = null;
+          try { ppUrl = await conn.profilePictureUrl(userId, 'image') } catch (e) { ppUrl = null }
+          let buffer = null;
+          try { buffer = ppUrl ? await getBuffer(ppUrl) : null } catch (e) { buffer = null }
+
+          const welcomeMsg = `🌟 *Welcome ${displayName}* 🌟\n\n👋 Hello @${userId.split('@')[0]}!\nYou joined *${groupName || 'this group'}*\n${groupDesc ? '\n📝 Description: ' + groupDesc + '\n' : ''}\nPlease introduce yourself — we hope you enjoy your stay! 🎉`;
+
+          await conn.sendMessage(groupId, {
+            image: buffer ? buffer : { url: config.MENU_IMAGE_URL },
+            caption: welcomeMsg,
+            contextInfo: { mentionedJid: [userId] }
+          }).catch(() => { });
+        }
+
+        if (action === 'remove') {
+          if (config.GOODBYE === 'false') continue;
+          let ppUrl = null;
+          try { ppUrl = await conn.profilePictureUrl(userId, 'image') } catch (e) { ppUrl = null }
+          let buffer = null;
+          try { buffer = ppUrl ? await getBuffer(ppUrl) : null } catch (e) { buffer = null }
+
+          const goodbyeMsg = `😢 *Goodbye ${displayName}* 😢\n\nWe are sad to see @${userId.split('@')[0]} leave *${groupName || 'this group'}*.\nWe will miss you! 💔`;
+
+          await conn.sendMessage(groupId, {
+            image: buffer ? buffer : { url: config.MENU_IMAGE_URL },
+            caption: goodbyeMsg,
+            contextInfo: { mentionedJid: [userId] }
+          }).catch(() => { });
+        }
+
+      }
+    } catch (err) {
+      console.error('Group participants handler error:', err);
+    }
   });
   //===================================================   
   conn.decodeJid = jid => {
