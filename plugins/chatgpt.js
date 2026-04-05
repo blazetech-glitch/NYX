@@ -21,7 +21,7 @@ function cleanupResponse(text) {
             text = text.answer;
         } else {
             // As last resort, stringify but avoid showing raw JSON to user
-            text = ""; 
+            text = "";
         }
     }
     return String(text || "").replace(/\r\n/g, "\n").trim();
@@ -33,22 +33,22 @@ const conversationHistory = new Map();
 // Helper function to check if message is from the bot itself
 function isFromBot(mek, conn) {
     if (!mek || !conn) return false;
-    
+
     // Check if message is marked as from bot
     if (mek.key?.fromMe) return true;
-    
+
     // Get bot's JID
     const botJid = conn.user?.id;
     if (!botJid) return false;
-    
+
     // Get sender's JID from the message
     const senderJid = mek.key?.participant || mek.key?.remoteJid;
     if (!senderJid) return false;
-    
+
     // Normalize and compare JIDs
     const botNumber = botJid.split(':')[0].split('@')[0];
     const senderNumber = senderJid.split(':')[0].split('@')[0];
-    
+
     return botNumber === senderNumber;
 }
 
@@ -113,7 +113,7 @@ cmd({
                 response.data.answer ||
                 response.data.data;
         }
-        
+
         // Clean and normalize the response
         responseText = cleanupResponse(responseText);
 

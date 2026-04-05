@@ -42,10 +42,10 @@ cmd({
         // Accept the group invite
         try {
             await conn.groupAcceptInvite(groupLink);
-            
+
             // Success message
-            await conn.sendMessage(from, { 
-                text: `✅ *Successfully Joined*\n\n🎉 You have been added to the group!\n\n🔗 Invite: https://chat.whatsapp.com/${groupLink}` 
+            await conn.sendMessage(from, {
+                text: `✅ *Successfully Joined*\n\n🎉 You have been added to the group!\n\n🔗 Invite: https://chat.whatsapp.com/${groupLink}`
             }, { quoted: mek });
 
             // Send success reaction
@@ -55,10 +55,10 @@ cmd({
 
         } catch (joinError) {
             console.error("Join error:", joinError);
-            
+
             // Provide specific error messages
             let errorMsg = "❌ *Failed to join group*\n\n";
-            
+
             if (joinError.message.includes('not found') || joinError.message.includes('404')) {
                 errorMsg += "The invite link is invalid or expired.";
             } else if (joinError.message.includes('already')) {
@@ -70,9 +70,9 @@ cmd({
             } else {
                 errorMsg += joinError.message || "Unknown error occurred. Please try again.";
             }
-            
+
             await conn.sendMessage(from, { text: errorMsg }, { quoted: mek });
-            
+
             await conn.sendMessage(from, {
                 react: { text: '❌', key: mek.key }
             });
