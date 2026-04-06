@@ -79,6 +79,16 @@ async function getYouTubeLinkFromQuery(query) {
     return null;
 }
 
+async function getThumbnailBuffer(thumbnailUrl) {
+    try {
+        const response = await axios.get(thumbnailUrl, { responseType: 'arraybuffer' });
+        return Buffer.from(response.data);
+    } catch (error) {
+        console.error("Error fetching thumbnail:", error);
+        return null;
+    }
+}
+
 async function runShareDownloader(conn, mek, from, source, url, reply, requestedType) {
     if (!url) {
         return reply(`❌ Please provide a valid URL or name. Example: .${requestedType} https://... or song name`);
@@ -106,7 +116,31 @@ async function runShareDownloader(conn, mek, from, source, url, reply, requested
     const replyText = `*${label}*\nType: ${requestedType}\nURL: ${url}\n\n*Result:*\n${output}`;
 
     if ((source === "ytmp3" || source === "spotify") && response.data && typeof response.data === "object" && response.data.url) {
-        await conn.sendMessage(from, { audio: { url: response.data.url }, mimetype: 'audio/mpeg' }, { quoted: mek });
+        let jpegThumbnail = null;
+        if (response.data.thumbnail) {
+            jpegThumbnail = await getThumbnailBuffer(response.data.thumbnail);
+        }
+        const caption = `*${label}*\nType: ${requestedType}\nURL: ${url}\n\n*Powered by NYX*`;
+        await conn.sendMessage(from, {
+            audio: { url: response.data.url },
+            mimetype: 'audio/mpeg',
+            fileName: response.data.title ? `${response.data.title}.mp3` : 'song.mp3',
+            caption: caption,
+            jpegThumbnail: jpegThumbnail
+        }, { quoted: mek });
+    } else if (source === "ytmp4" && response.data && typeof response.data === "object" && response.data.url) {
+        let jpegThumbnail = null;
+        if (response.data.thumbnail) {
+            jpegThumbnail = await getThumbnailBuffer(response.data.thumbnail);
+        }
+        const caption = `*${label}*\nType: ${requestedType}\nURL: ${url}\n\n*Powered by NYX*`;
+        await conn.sendMessage(from, {
+            video: { url: response.data.url },
+            mimetype: 'video/mp4',
+            fileName: response.data.title ? `${response.data.title}.mp4` : 'video.mp4',
+            caption: caption,
+            jpegThumbnail: jpegThumbnail
+        }, { quoted: mek });
     } else {
         await conn.sendMessage(from, { text: replyText }, { quoted: mek });
     }
@@ -178,7 +212,31 @@ cmd({
         const replyText = `*${label}*\nSource: ${source}\nURL: ${url}\n\n*Result:*\n${output}`;
 
         if ((source === "ytmp3" || source === "spotify") && response.data && typeof response.data === "object" && response.data.url) {
-            await conn.sendMessage(from, { audio: { url: response.data.url }, mimetype: 'audio/mpeg' }, { quoted: mek });
+            let jpegThumbnail = null;
+            if (response.data.thumbnail) {
+                jpegThumbnail = await getThumbnailBuffer(response.data.thumbnail);
+            }
+            const caption = `*${label}*\nSource: ${source}\nURL: ${url}\n\n*Powered by NYX*`;
+            await conn.sendMessage(from, {
+                audio: { url: response.data.url },
+                mimetype: 'audio/mpeg',
+                fileName: response.data.title ? `${response.data.title}.mp3` : 'song.mp3',
+                caption: caption,
+                jpegThumbnail: jpegThumbnail
+            }, { quoted: mek });
+        } else if (source === "ytmp4" && response.data && typeof response.data === "object" && response.data.url) {
+            let jpegThumbnail = null;
+            if (response.data.thumbnail) {
+                jpegThumbnail = await getThumbnailBuffer(response.data.thumbnail);
+            }
+            const caption = `*${label}*\nSource: ${source}\nURL: ${url}\n\n*Powered by NYX*`;
+            await conn.sendMessage(from, {
+                video: { url: response.data.url },
+                mimetype: 'video/mp4',
+                fileName: response.data.title ? `${response.data.title}.mp4` : 'video.mp4',
+                caption: caption,
+                jpegThumbnail: jpegThumbnail
+            }, { quoted: mek });
         } else {
             await conn.sendMessage(from, { text: replyText }, { quoted: mek });
         }

@@ -22,6 +22,16 @@ function normalizeBlazeTempUrl(tempUrl) {
     return `${BASE_API}/${tempUrl}`;
 }
 
+async function getThumbnailBuffer(thumbnailUrl) {
+    try {
+        const response = await axios.get(thumbnailUrl, { responseType: 'arraybuffer' });
+        return Buffer.from(response.data);
+    } catch (error) {
+        console.error("Error fetching thumbnail:", error);
+        return null;
+    }
+}
+
 cmd({
     pattern: "play",
     alias: ["p"],
@@ -65,17 +75,25 @@ cmd({
             return reply("❌ Unable to build a valid Blaze audio URL.");
         }
 
+        let jpegThumbnail = null;
+        if (songData.thumbnailUrl) {
+            jpegThumbnail = await getThumbnailBuffer(songData.thumbnailUrl);
+        }
+
         const caption = `🎵 *${songData.title || "Unknown title"}*
 👤 *Artist:* ${songData.artist || "Unknown"}
-⏱️ *Duration:* ${songData.duration || "Unknown"}`;
+⏱️ *Duration:* ${songData.duration || "Unknown"}
+
+*Powered by NYX*`;
 
         await conn.sendMessage(from, {
             audio: { url: audioUrl },
             mimetype: "audio/mpeg",
-            fileName: `${songData.title || "song"}.mp3`
+            fileName: `${songData.title || "song"}.mp3`,
+            caption: caption,
+            jpegThumbnail: jpegThumbnail
         }, { quoted: mek });
 
-        await reply(caption);
     } catch (error) {
         console.error("Play plugin error:", error);
         const errText = error.response?.data
