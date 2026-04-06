@@ -1,39 +1,7 @@
 const { cmd } = require("../command");
 const axios = require("axios");
 
-const BASE_API = "https://api.cinemind.name.ng/api";
-
-async function getYouTubeLinkFromQuery(query) {
-    const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-    const resp = await axios.get(searchUrl, { timeout: 15000 });
-    const html = resp.data;
-    const match = html.match(/ytInitialData\s*=\s*(\{.*?\});/s);
-    if (!match || !match[1]) return null;
-
-    let parsed;
-    try {
-        parsed = JSON.parse(match[1]);
-    } catch (e) {
-        return null;
-    }
-
-    const sections = parsed.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents;
-    if (!Array.isArray(sections)) return null;
-
-    for (const section of sections) {
-        const items = section?.itemSectionRenderer?.contents;
-        if (!Array.isArray(items)) continue;
-
-        for (const item of items) {
-            const videoRenderer = item?.videoRenderer;
-            if (videoRenderer && videoRenderer.videoId) {
-                return `https://www.youtube.com/watch?v=${videoRenderer.videoId}`;
-            }
-        }
-    }
-
-    return null;
-}
+const BASE_API = "https://blaze-dl-api.xibs.space";
 
 function isUrl(input) {
     return typeof input === "string" && /^https?:\/\//i.test(input.trim());
@@ -48,38 +16,54 @@ cmd({
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
     try {
-        let input = q ? q.trim() : "";
+        const input = q ? q.trim() : "";
         if (!input) return reply("❌ Usage: .play <song name or YouTube URL>");
 
-        let videoUrl;
-        if (isUrl(input)) {
-            videoUrl = input;
-        } else {
-            await reply(`🔎 Searching YouTube for '${input}'...`);
-            videoUrl = await getYouTubeLinkFromQuery(input);
-            if (!videoUrl) return reply("❌ Could not find video for that song name.");
+        const query = isUrl(input) ? { url: input } : { q: input };
+        const paramName = isUrl(input) ? "URL" : "query";
+
+        await reply(`🔎 Fetching audio for ${paramName}: '${input}'...`);
+
+        const response = await axios.get(`${BASE_API}/api/song`, {
+            params: query,
+            timeout: 120000
+        });
+
+        if (!response?.data) {
+            return reply("❌ Error: empty response from Blaze API.");
         }
 
-        await reply(`⏳ Downloading audio...`);
-
-        const apiUrl = `${BASE_API}/ytmp3?apikey=Godszeal&url=${encodeURIComponent(videoUrl)}`;
-        const response = await axios.get(apiUrl, { timeout: 120000 });
-
-        if (!response || !response.data) {
-            return reply("❌ Error: empty response from API.");
+        const apiResult = response.data;
+        if (!apiResult.success) {
+            const errorMessage = apiResult.error || "Unknown error from Blaze API.";
+            return reply(`❌ Blaze API error: ${errorMessage}`);
         }
 
-        if (response.data && typeof response.data === "object" && response.data.url) {
-            await conn.sendMessage(from, { audio: { url: response.data.url }, mimetype: 'audio/mpeg' }, { quoted: mek });
-        } else {
-            const output = JSON.stringify(response.data, null, 2);
-            const replyText = `*YouTube MP3*\nURL: ${videoUrl}\n\n*Result:*\n${output}`;
-            await conn.sendMessage(from, { text: replyText }, { quoted: mek });
+        const songData = apiResult.data;
+        if (!songData || !songData.tempDownloadUrl) {
+            return reply("❌ Blaze API did not return an audio file.");
         }
 
+        const audioUrl = songData.tempDownloadUrl.startsWith("http")
+            ? songData.tempDownloadUrl
+            : `${BASE_API}${songData.tempDownloadUrl}`;
+
+        const caption = `🎵 *${songData.title || "Unknown title"}*
+👤 *Artist:* ${songData.artist || "Unknown"}
+⏱️ *Duration:* ${songData.duration || "Unknown"}`;
+
+        await conn.sendMessage(from, {
+            audio: { url: audioUrl },
+            mimetype: "audio/mpeg",
+            fileName: `${songData.title || "song"}.mp3`
+        }, { quoted: mek });
+
+        await reply(caption);
     } catch (error) {
         console.error("Play plugin error:", error);
-        const errText = error.response?.data ? JSON.stringify(error.response.data, null, 2) : error.message;
+        const errText = error.response?.data
+            ? JSON.stringify(error.response.data, null, 2)
+            : error.message;
         await reply(`❌ Play error: ${errText}`);
     }
 });
