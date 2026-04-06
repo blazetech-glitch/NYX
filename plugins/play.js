@@ -7,6 +7,21 @@ function isUrl(input) {
     return typeof input === "string" && /^https?:\/\//i.test(input.trim());
 }
 
+function normalizeBlazeTempUrl(tempUrl) {
+    if (!tempUrl) return null;
+    if (tempUrl.startsWith("http")) return tempUrl;
+    if (tempUrl.startsWith("/app/temp/")) {
+        return `${BASE_API}/temp/${tempUrl.slice("/app/temp/".length)}`;
+    }
+    if (tempUrl.startsWith("/temp/")) {
+        return `${BASE_API}${tempUrl}`;
+    }
+    if (tempUrl.startsWith("/")) {
+        return `${BASE_API}${tempUrl}`;
+    }
+    return `${BASE_API}/${tempUrl}`;
+}
+
 cmd({
     pattern: "play",
     alias: ["p"],
@@ -40,13 +55,15 @@ cmd({
         }
 
         const songData = apiResult.data;
-        if (!songData || !songData.tempDownloadUrl) {
+        const tempUrl = songData?.tempDownloadUrl || songData?.tempUrl;
+        if (!songData || !tempUrl) {
             return reply("❌ Blaze API did not return an audio file.");
         }
 
-        const audioUrl = songData.tempDownloadUrl.startsWith("http")
-            ? songData.tempDownloadUrl
-            : `${BASE_API}${songData.tempDownloadUrl}`;
+        const audioUrl = normalizeBlazeTempUrl(tempUrl);
+        if (!audioUrl) {
+            return reply("❌ Unable to build a valid Blaze audio URL.");
+        }
 
         const caption = `🎵 *${songData.title || "Unknown title"}*
 👤 *Artist:* ${songData.artist || "Unknown"}
