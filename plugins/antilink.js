@@ -106,17 +106,6 @@ const containsLink = (text) => {
 // Helper: Get random fun message
 const getRandomMessage = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-// Helper: Delete message safely
-const deleteMessage = async (conn, from, messageKey) => {
-  try {
-    await conn.sendMessage(from, { delete: messageKey });
-    return true;
-  } catch (e) {
-    console.error('Failed to delete message:', e.message);
-    return false;
-  }
-};
-
 // Main Anti-Link Handler
 cmd({
   'on': "body"
@@ -187,18 +176,29 @@ cmd({
     // ║                      DELETE MESSAGE                          ║
     // ╚══════════════════════════════════════════════════════════════╝
     if (shouldDelete) {
-      const deleted = await deleteMessage(conn, from, m.key);
-      
-      if (deleted) {
-        console.log(`✅ Link message deleted from ${sender}`);
+      try {
+        // Force delete using the exact message key
+        await conn.sendMessage(from, { delete: m.key });
+        console.log(`✅ Link message DELETED from ${sender}`);
+        
+        // Send deletion notification with fun message
         try {
-          // Send deletion notification
           await conn.sendMessage(from, {
-            text: `🔴 @${sender.split('@')[0]}\n\n${getRandomMessage(funMessages)}\n\n💬 Links are not allowed in this group!`,
+            text: `🔴 *LINK DETECTED & DELETED* 🔴\n\n${getRandomMessage(funMessages)}\n\n@${sender.split('@')[0]} - Links are not allowed here!`,
             mentions: [sender]
           });
         } catch (err) {
-          console.error('Error sending deletion notification:', err);
+          console.error('Error sending deletion notification:', err.message);
+        }
+      } catch (err) {
+        console.error('Failed to delete message:', err.message);
+        try {
+          await conn.sendMessage(from, {
+            text: `⚠️ Link detected from @${sender.split('@')[0]} but couldn't be deleted. Bot needs admin rights!`,
+            mentions: [sender]
+          });
+        } catch (e) {
+          console.error('Error sending fallback deletion message:', e);
         }
       }
     }
@@ -227,81 +227,78 @@ cmd({
     // ╔══════════════════════════════════════════════════════════════╗
     // ║                      WARNING SYSTEM                          ║
     // ╚══════════════════════════════════════════════════════════════╝
-    if (!shouldWarn) return;
-
-    const warns = await readWarns();
     
-    // Initialize group warns if needed
-    if (!warns[from]) warns[from] = {};
-    
-    // Get current warns for user
-    const currentWarns = warns[from][sender] ? Number(warns[from][sender]) : 0;
-    const newWarns = currentWarns + 1;
-    
-    // Update warns
-    warns[from][sender] = newWarns;
-    await writeWarns(warns);
-
-    const maxWarns = 5;
-    
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║                   MAX WARNS REACHED - KICK                   ║
-    // ╚══════════════════════════════════════════════════════════════╝
-    if (newWarns >= maxWarns) {
-      delete warns[from][sender];
+    // Only proceed with warning system if enabled
+    if (shouldWarn) {
+      const warns = await readWarns();
+      
+      // Initialize group warns if needed
+      if (!warns[from]) warns[from] = {};
+      
+      // Get current warns for user
+      const currentWarns = warns[from][sender] ? Number(warns[from][sender]) : 0;
+      const newWarns = currentWarns + 1;
+      
+      // Update warns
+      warns[from][sender] = newWarns;
       await writeWarns(warns);
 
+      const maxWarns = 5;
+      
+      // ╔══════════════════════════════════════════════════════════════╗
+      // ║                   MAX WARNS REACHED - KICK                   ║
+      // ╚══════════════════════════════════════════════════════════════╝
+      if (newWarns >= maxWarns) {
+        delete warns[from][sender];
+        await writeWarns(warns);
+
+        try {
+          const kickMsg = getRandomMessage(kickMessages);
+          await conn.sendMessage(from, {
+            text: `🚫 @${sender.split('@')[0]}\n\n⚠️ ${maxWarns} WARNINGS REACHED!\n${kickMsg}\n\n👋 Goodbye!`,
+            mentions: [sender]
+          });
+          
+          // Remove the user
+          await conn.groupParticipantsUpdate(from, [sender], 'remove');
+          console.log(`❌ User ${sender} removed after ${maxWarns} link warnings`);
+        } catch (err) {
+          console.error('Failed to remove user after max warns:', err);
+          reply('⚠️ Could not remove user. Make sure the bot has admin rights.');
+        }
+        return;
+      }
+
+      // ╔══════════════════════════════════════════════════════════════╗
+      // ║                    SEND WARNING MESSAGE                      ║
+      // ╚══════════════════════════════════════════════════════════════╝
       try {
-        const kickMsg = getRandomMessage(kickMessages);
+        let warningText = `⚠️ *WARNING* ⚠️\n\n`;
+        warningText += `🚫 @${sender.split('@')[0]}\n\n`;
+        warningText += `📊 *WARN COUNT: ${newWarns}/${maxWarns}*\n\n`;
+        warningText += `❌ Links are NOT allowed in this group!\n`;
+        warningText += `✂️ Your link message was deleted\n\n`;
+        
+        if (newWarns >= 3) {
+          warningText += `🔴 *DANGER!* You're close to removal!\n`;
+        }
+        
+        warningText += `⏰ ${maxWarns - newWarns} more warnings until you're removed!`;
+
         await conn.sendMessage(from, {
-          text: `🚫 @${sender.split('@')[0]}\n\n⚠️ ${maxWarns} WARNINGS REACHED!\n${kickMsg}\n\n👋 Goodbye!`,
+          text: warningText,
           mentions: [sender]
         });
         
-        // Remove the user
-        await conn.groupParticipantsUpdate(from, [sender], 'remove');
-        console.log(`❌ User ${sender} removed after ${maxWarns} link warnings`);
+        console.log(`⚠️ Warning ${newWarns}/${maxWarns} sent to ${sender}`);
       } catch (err) {
-        console.error('Failed to remove user after max warns:', err);
-        reply('⚠️ Could not remove user. Make sure the bot has admin rights.');
-      }
-      return;
-    }
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║                    SEND WARNING MESSAGE                      ║
-    // ╚══════════════════════════════════════════════════════════════╝
-    try {
-      const warningBars = '═'.repeat(25);
-      const warnMessage = `
-╔${warningBars}╗
-║  ⚠️  WARNING ${newWarns}/${maxWarns}  ⚠️  ║
-╚${warningBars}╝
-
-🚫 @${sender.split('@')[0]}
-
-📌 NO LINKS ALLOWED IN THIS GROUP!
-
-⏰ Your current warnings: ${newWarns}/${maxWarns}
-⏰ After ${maxWarns} warnings you will be removed!
-
-🔗 Links detected and deleted.
-${newWarns >= 3 ? '🔴 BE CAREFUL - You\'re close to removal!' : ''}
-`;
-
-      await conn.sendMessage(from, {
-        text: warnMessage.trim(),
-        mentions: [sender]
-      });
-      
-      console.log(`⚠️ Warning ${newWarns}/${maxWarns} sent to ${sender}`);
-    } catch (err) {
-      console.error('Error sending warning:', err);
-      try {
-        // Fallback message
-        reply(`⚠️ @${sender.split('@')[0]} Warning ${newWarns}/${maxWarns} - No links allowed!`);
-      } catch (e) {
-        console.error('Fallback message also failed');
+        console.error('Error sending warning:', err);
+        try {
+          // Fallback message
+          reply(`⚠️ @${sender.split('@')[0]} WARNING ${newWarns}/${maxWarns}`);
+        } catch (e) {
+          console.error('Fallback message also failed');
+        }
       }
     }
 
