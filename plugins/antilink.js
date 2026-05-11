@@ -117,15 +117,32 @@ cmd({
   isAdmins,
   isBotAdmins,
   reply,
-  mentions
+  mentions,
+  groupMetadata,
+  botNumber2,
+  botNumber
 }) => {
   try {
     // Skip if not a group
     if (!isGroup) return;
     
-    // Skip if bot is not admin
-    if (!isBotAdmins) {
-      console.log('Bot is not admin in this group, skipping antilink check');
+    // Check if bot is admin - use both isBotAdmins and manual verification
+    let botIsAdmin = isBotAdmins;
+    
+    // Manual verification if isBotAdmins is unreliable
+    if (!botIsAdmin && groupMetadata && groupMetadata.participants) {
+      const botJid = botNumber2 || botNumber || (m.key && m.key.participant);
+      const adminList = groupMetadata.participants
+        .filter(p => p.admin)
+        .map(p => p.id);
+      botIsAdmin = adminList.some(adminJid => 
+        adminJid === botJid || 
+        adminJid.includes(botJid?.split('@')[0])
+      );
+    }
+    
+    if (!botIsAdmin) {
+      console.log('⚠️ Bot is not admin in this group - antilink check skipped');
       return;
     }
 
