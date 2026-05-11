@@ -218,8 +218,7 @@ cmd({
         await conn.groupParticipantsUpdate(from, [sender], 'remove');
         console.log(`❌ User ${sender} kicked for posting link`);
       } catch (err) {
-        console.error('Failed to kick user:', err);
-        reply('⚠️ Could not remove user. Make sure the bot has admin rights.');
+        console.error('Failed to kick user:', err.message);
       }
       return;
     }
@@ -263,8 +262,7 @@ cmd({
           await conn.groupParticipantsUpdate(from, [sender], 'remove');
           console.log(`❌ User ${sender} removed after ${maxWarns} link warnings`);
         } catch (err) {
-          console.error('Failed to remove user after max warns:', err);
-          reply('⚠️ Could not remove user. Make sure the bot has admin rights.');
+          console.error('Failed to remove user after max warns:', err.message);
         }
         return;
       }
