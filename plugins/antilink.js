@@ -197,26 +197,8 @@ cmd({
         // Force delete using the exact message key
         await conn.sendMessage(from, { delete: m.key });
         console.log(`✅ Link message DELETED from ${sender}`);
-        
-        // Send deletion notification with fun message
-        try {
-          await conn.sendMessage(from, {
-            text: `🔴 *LINK DETECTED & DELETED* 🔴\n\n${getRandomMessage(funMessages)}\n\n@${sender.split('@')[0]} - Links are not allowed here!`,
-            mentions: [sender]
-          });
-        } catch (err) {
-          console.error('Error sending deletion notification:', err.message);
-        }
       } catch (err) {
         console.error('Failed to delete message:', err.message);
-        try {
-          await conn.sendMessage(from, {
-            text: `⚠️ Link detected from @${sender.split('@')[0]} but couldn't be deleted. Bot needs admin rights!`,
-            mentions: [sender]
-          });
-        } catch (e) {
-          console.error('Error sending fallback deletion message:', e);
-        }
       }
     }
 
@@ -224,10 +206,12 @@ cmd({
     // ║                    IMMEDIATE KICK ACTION                     ║
     // ╚══════════════════════════════════════════════════════════════╝
     if (shouldKick) {
+      // Only kick if this is the first offense and shouldKick is enabled
+      // Otherwise let the warning system handle it
       try {
         const kickMsg = getRandomMessage(kickMessages);
         await conn.sendMessage(from, {
-          text: `🚫 @${sender.split('@')[0]}\n\n${kickMsg}`,
+          text: `🚫 *INSTANT REMOVAL* 🚫\n\n${kickMsg}\n\n@${sender.split('@')[0]} has been removed for posting a link!`,
           mentions: [sender]
         });
         
@@ -271,7 +255,7 @@ cmd({
         try {
           const kickMsg = getRandomMessage(kickMessages);
           await conn.sendMessage(from, {
-            text: `🚫 @${sender.split('@')[0]}\n\n⚠️ ${maxWarns} WARNINGS REACHED!\n${kickMsg}\n\n👋 Goodbye!`,
+            text: `🚫 *FINAL WARNING - USER REMOVED* 🚫\n\n${kickMsg}\n\n@${sender.split('@')[0]} has been removed for reaching ${maxWarns} link violations!\n\n👋 Goodbye!`,
             mentions: [sender]
           });
           
@@ -285,20 +269,41 @@ cmd({
       }
 
       // ╔══════════════════════════════════════════════════════════════╗
-      // ║                    SEND WARNING MESSAGE                      ║
+      // ║              SEND SINGLE COMPREHENSIVE WARNING               ║
       // ╚══════════════════════════════════════════════════════════════╝
       try {
-        let warningText = `⚠️ *WARNING* ⚠️\n\n`;
-        warningText += `🚫 @${sender.split('@')[0]}\n\n`;
-        warningText += `📊 *WARN COUNT: ${newWarns}/${maxWarns}*\n\n`;
-        warningText += `❌ Links are NOT allowed in this group!\n`;
-        warningText += `✂️ Your link message was deleted\n\n`;
+        const funMsg = getRandomMessage(funMessages);
+        const warningsLeft = maxWarns - newWarns;
+        const progressBar = '█'.repeat(newWarns) + '░'.repeat(maxWarns - newWarns);
         
-        if (newWarns >= 3) {
-          warningText += `🔴 *DANGER!* You're close to removal!\n`;
+        let warningText = `
+╔═════════════════════════════════════════╗
+║           🔴 LINK ALERT 🔴             ║
+╚═════════════════════════════════════════╝
+
+*${funMsg}*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👤 *User:* @${sender.split('@')[0]}
+🔗 *Action:* Link deleted immediately
+📊 *Warnings:* ${newWarns}/${maxWarns}
+⏳ *Remaining:* ${warningsLeft} more warning${warningsLeft === 1 ? '' : 's'}
+
+*Progress:* [${progressBar}]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+
+        if (newWarns === 1) {
+          warningText += `\n⚠️ *First warning!* Don't post links again.\n`;
+        } else if (newWarns >= 3 && newWarns < maxWarns) {
+          warningText += `\n🔴 *DANGER!* ${warningsLeft} warning${warningsLeft === 1 ? '' : 's'} left before removal!\n`;
+        } else if (newWarns === 4) {
+          warningText += `\n🚨 *CRITICAL!* One more warning and you're OUT! 👋\n`;
         }
-        
-        warningText += `⏰ ${maxWarns - newWarns} more warnings until you're removed!`;
+
+        warningText += `\n💬 Links are NOT allowed in this group!`;
 
         await conn.sendMessage(from, {
           text: warningText,
