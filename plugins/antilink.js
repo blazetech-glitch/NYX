@@ -7,6 +7,12 @@ const path = require('path');
 // ╔═══════════════════════════════════════════════════════════════════════╗
 // ║                    ANTI-LINK PROTECTION SYSTEM                        ║
 // ║         Detects, deletes, and warns users posting links               ║
+// ║                                                                       ║
+// ║  ⚠️ THIS IS THE PRIMARY ANTILINK HANDLER                             ║
+// ║  ⚠️ DO NOT USE ALONGSIDE delete-links.js OR OTHER ANTILINK PLUGINS   ║
+// ║  ⚠️ OTHER ANTILINK FILES SHOULD BE DISABLED (.disabled)              ║
+// ║                                                                       ║
+// ║  Bot is ALLERGIC to LINKS! 🤧                                         ║
 // ╚═══════════════════════════════════════════════════════════════════════╝
 
 // Comprehensive link detection patterns
@@ -45,7 +51,9 @@ const funMessages = [
   "Somebody stop this madlad! 😤",
   "Links detected... OBLITERATED! 💥",
   "Your link privileges have expired! 📵",
-  "Not on my watch! 👮"
+  "Not on my watch! 👮",
+  "ATCHOOOO! Link allergies acting up! 🤧",
+  "My immune system detected a link infection! 🦠➡️🗑️"
 ];
 
 const kickMessages = [
