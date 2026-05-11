@@ -4,50 +4,15 @@ const pluginSettings = require('../lib/pluginSettings');
 const fs = require('fs').promises;
 const path = require('path');
 
-// Anti-Bad Words System
-cmd({
-  'on': "body"
-}, async (conn, m, store, {
-  from,
-  body,
-  isGroup,
-  isAdmins,
-  isBotAdmins,
-  reply,
-  sender
-}) => {
-  try {
-    const badWords = ["wtf", "mia", "xxx", "fuck", 'sex', "huththa", "pakaya", 'ponnaya', "hutto"];
+// ╔═══════════════════════════════════════════════════════════════════════╗
+// ║                    ANTI-LINK PROTECTION SYSTEM                        ║
+// ║         Detects, deletes, and warns users posting links               ║
+// ╚═══════════════════════════════════════════════════════════════════════╝
 
-    // Skip if not a group or bot is not admin
-    if (!isGroup || !isBotAdmins) {
-      return;
-    }
-
-    // Allow admins to send bad words without penalty
-    if (isAdmins) {
-      return;
-    }
-
-    const messageText = body.toLowerCase();
-    const containsBadWord = badWords.some(word => messageText.includes(word));
-
-    if (containsBadWord && config.ANTI_BAD_WORD === 'true') {
-      await conn.sendMessage(from, { 'delete': m.key }, { 'quoted': m });
-      await conn.sendMessage(from, { 'text': "🚫 ⚠️ BAD WORDS NOT ALLOWED ⚠️ 🚫" }, { 'quoted': m });
-    }
-  } catch (error) {
-    console.error(error);
-    reply("An error occurred while processing the message.");
-  }
-});
-
-// Anti-Link System
-// Generic and specific link patterns (no global flag to avoid lastIndex issues)
+// Comprehensive link detection patterns
 const linkPatterns = [
-  /(?:https?:\/\/|www\.)\S+/i, // any http(s) or www link
+  /(?:https?:\/\/|www\.)\S+/i,
   /https?:\/\/(?:chat\.whatsapp\.com|wa\.me)\/\S+/i,
-  /^https?:\/\/(www\.)?whatsapp\.com\/channel\/([a-zA-Z0-9_-]+)$/i,
   /https?:\/\/(?:t\.me|telegram\.me)\/\S+/i,
   /https?:\/\/(?:www\.)?youtube\.com\/\S+/i,
   /https?:\/\/youtu\.be\/\S+/i,
@@ -60,14 +25,99 @@ const linkPatterns = [
   /https?:\/\/(?:www\.)?snapchat\.com\/\S+/i,
   /https?:\/\/(?:www\.)?pinterest\.com\/\S+/i,
   /https?:\/\/(?:www\.)?reddit\.com\/\S+/i,
-  /https?:\/\/ngl\/\S+/i,
+  /https?:\/\/ngl\.link\/\S+/i,
   /https?:\/\/(?:www\.)?discord\.com\/\S+/i,
   /https?:\/\/(?:www\.)?twitch\.tv\/\S+/i,
   /https?:\/\/(?:www\.)?vimeo\.com\/\S+/i,
   /https?:\/\/(?:www\.)?dailymotion\.com\/\S+/i,
-  /https?:\/\/(?:www\.)?medium\.com\/\S+/i
+  /https?:\/\/(?:www\.)?medium\.com\/\S+/i,
+  /https?:\/\/bit\.ly\/\S+/i,
+  /https?:\/\/tinyurl\.com\/\S+/i
 ];
 
+// Fun warning messages
+const funMessages = [
+  "Stop trying to be a marketer! 😂",
+  "No spamming links, buddy! 🚫",
+  "Links? In MY group? Absolutely not! 🙅",
+  "That link has been *yeeted* into oblivion! 🚀",
+  "I'm allergic to links, sorry! 🤧",
+  "Somebody stop this madlad! 😤",
+  "Links detected... OBLITERATED! 💥",
+  "Your link privileges have expired! 📵",
+  "Not on my watch! 👮"
+];
+
+const kickMessages = [
+  "You've been permanently banned from link posting. Goodbye! 👋",
+  "Too many warnings! Time to go! 🚪❌",
+  "That's all folks! See you later! 👋",
+  "You're out! No more link parties for you! 🎉❌",
+  "Time to take a little break from this group! 🌴"
+];
+
+// Extract warns file location
+const warnsFile = path.join(process.cwd(), 'store', 'antilink_warns.json');
+
+// Helper: Read warns
+const readWarns = async () => {
+  try {
+    const data = await fs.readFile(warnsFile, 'utf8');
+    return JSON.parse(data || '{}');
+  } catch (e) {
+    return {};
+  }
+};
+
+// Helper: Write warns
+const writeWarns = async (obj) => {
+  try {
+    await fs.mkdir(path.dirname(warnsFile), { recursive: true });
+    await fs.writeFile(warnsFile, JSON.stringify(obj, null, 2), 'utf8');
+  } catch (e) {
+    console.error('Error writing warns file:', e);
+  }
+};
+
+// Helper: Extract text from various message types
+const extractMessageText = (body, message) => {
+  let text = (body || '').toString();
+  const msg = message || {};
+  
+  if (!text || text.trim().length === 0) {
+    if (msg.conversation) text = msg.conversation;
+    else if (msg.extendedTextMessage?.text) text = msg.extendedTextMessage.text;
+    else if (msg.imageMessage?.caption) text = msg.imageMessage.caption;
+    else if (msg.videoMessage?.caption) text = msg.videoMessage.caption;
+    else if (msg.documentMessage?.caption) text = msg.documentMessage.caption;
+    else if (msg.buttonsResponseMessage?.selectedButtonId) text = msg.buttonsResponseMessage.selectedButtonId;
+    else if (msg.templateButtonReplyMessage?.selectedId) text = msg.templateButtonReplyMessage.selectedId;
+    else text = '';
+  }
+  
+  return text;
+};
+
+// Helper: Check if text contains link
+const containsLink = (text) => {
+  return linkPatterns.some(pattern => pattern.test(text || ''));
+};
+
+// Helper: Get random fun message
+const getRandomMessage = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+// Helper: Delete message safely
+const deleteMessage = async (conn, from, messageKey) => {
+  try {
+    await conn.sendMessage(from, { delete: messageKey });
+    return true;
+  } catch (e) {
+    console.error('Failed to delete message:', e.message);
+    return false;
+  }
+};
+
+// Main Anti-Link Handler
 cmd({
   'on': "body"
 }, async (conn, m, store, {
@@ -77,153 +127,186 @@ cmd({
   isGroup,
   isAdmins,
   isBotAdmins,
-  reply
+  reply,
+  mentions
 }) => {
   try {
-    // Skip if not a group or bot is not admin
-    if (!isGroup || !isBotAdmins) return;
+    // Skip if not a group
+    if (!isGroup) return;
+    
+    // Skip if bot is not admin
+    if (!isBotAdmins) {
+      console.log('Bot is not admin in this group, skipping antilink check');
+      return;
+    }
 
     // Check global setting and per-group override for anti-link
     let antiLinkEnabled = config.ANTI_LINK === 'true';
     try {
       const override = await pluginSettings.get(from, 'antilink');
-      if (override !== undefined) antiLinkEnabled = (override === true || String(override) === 'true' || String(override).toLowerCase() === 'on');
+      if (override !== undefined) {
+        antiLinkEnabled = (override === true || String(override) === 'true' || String(override).toLowerCase() === 'on');
+      }
     } catch (err) {
-      console.error('Error reading plugin setting (antilink):', err);
+      console.error('Error reading antilink plugin setting:', err);
     }
+
     if (!antiLinkEnabled) return;
 
-    // Determine action mode (global default + per-group override)
+    // Allow admins to post links without restriction
+    if (isAdmins) {
+      console.log(`Admin ${sender} can post links freely`);
+      return;
+    }
+
+    // Extract and check message text
+    const messageText = extractMessageText(body, m.message);
+    
+    if (!containsLink(messageText)) {
+      return; // No link detected, continue
+    }
+
+    console.log(`🚫 Link detected from non-admin ${sender} in ${from}`);
+
+    // Determine action mode
     const defaultAction = config.DELETE_LINKS === 'true' ? 'delete_warn' : 'warn';
     let antilinkAction = (config.ANTI_LINK_ACTION || defaultAction).toString().toLowerCase();
+    
     try {
       const actionOverride = await pluginSettings.get(from, 'antilink_action');
       if (actionOverride) antilinkAction = String(actionOverride).toLowerCase();
     } catch (err) {
-      console.error('Error reading plugin setting (antilink_action):', err);
+      console.error('Error reading antilink_action setting:', err);
     }
-
-    // Allow admins to send links without penalty
-    if (isAdmins) return;
-
-    // Normalize message text to cover captions and extended messages
-    let text = (body || '').toString();
-    const msg = m.message || {};
-    if (!text || text.length === 0) {
-      if (msg.conversation) text = msg.conversation;
-      else if (msg.extendedTextMessage && msg.extendedTextMessage.text) text = msg.extendedTextMessage.text;
-      else if (msg.imageMessage && msg.imageMessage.caption) text = msg.imageMessage.caption;
-      else if (msg.videoMessage && msg.videoMessage.caption) text = msg.videoMessage.caption;
-      else if (msg.documentMessage && msg.documentMessage.caption) text = msg.documentMessage.caption;
-      else if (msg.buttonsResponseMessage && msg.buttonsResponseMessage.selectedButtonId) text = msg.buttonsResponseMessage.selectedButtonId;
-      else if (msg.templateButtonReplyMessage && msg.templateButtonReplyMessage.selectedId) text = msg.templateButtonReplyMessage.selectedId;
-      else text = '';
-    }
-
-    const containsLink = linkPatterns.some(pattern => pattern.test(text || ''));
-
-    if (!containsLink) return;
 
     const shouldDelete = antilinkAction.startsWith('delete');
     const shouldWarn = antilinkAction.includes('warn');
     const shouldKick = antilinkAction.includes('kick') || String(config.ANTI_LINK_KICK) === 'true';
 
-    // Delete offending message first if configured
+    // ╔══════════════════════════════════════════════════════════════╗
+    // ║                      DELETE MESSAGE                          ║
+    // ╚══════════════════════════════════════════════════════════════╝
     if (shouldDelete) {
-      try {
-        const deleteKey = {
-          remoteJid: from,
-          fromMe: false,
-          id: m.key && m.key.id ? m.key.id : (m.id || ''),
-          participant: m.key && m.key.participant ? m.key.participant : (m.participant || undefined)
-        };
-        await conn.sendMessage(from, { delete: deleteKey });
-      } catch (e) {
+      const deleted = await deleteMessage(conn, from, m.key);
+      
+      if (deleted) {
+        console.log(`✅ Link message deleted from ${sender}`);
         try {
-          await conn.sendMessage(from, { delete: m.key });
+          // Send deletion notification
+          await conn.sendMessage(from, {
+            text: `🔴 @${sender.split('@')[0]}\n\n${getRandomMessage(funMessages)}\n\n💬 Links are not allowed in this group!`,
+            mentions: [sender]
+          });
         } catch (err) {
-          console.error('Failed to delete link message:', err && err.message ? err.message : err);
+          console.error('Error sending deletion notification:', err);
         }
       }
     }
 
-    // If configured to kick immediately, do so now
+    // ╔══════════════════════════════════════════════════════════════╗
+    // ║                    IMMEDIATE KICK ACTION                     ║
+    // ╚══════════════════════════════════════════════════════════════╝
     if (shouldKick) {
       try {
+        const kickMsg = getRandomMessage(kickMessages);
         await conn.sendMessage(from, {
-          text: `🚫 @${sender.split('@')[0]} posted a link and will be removed.`,
+          text: `🚫 @${sender.split('@')[0]}\n\n${kickMsg}`,
           mentions: [sender]
-        }, { quoted: m });
+        });
+        
+        // Remove user
         await conn.groupParticipantsUpdate(from, [sender], 'remove');
+        console.log(`❌ User ${sender} kicked for posting link`);
       } catch (err) {
-        console.error('Failed to remove user for link (kickImmediately):', err);
-        reply('Could not remove the user, make sure the bot has admin rights.');
+        console.error('Failed to kick user:', err);
+        reply('⚠️ Could not remove user. Make sure the bot has admin rights.');
       }
       return;
     }
 
-    // If warnings are disabled, stop here (message already deleted)
+    // ╔══════════════════════════════════════════════════════════════╗
+    // ║                      WARNING SYSTEM                          ║
+    // ╚══════════════════════════════════════════════════════════════╝
     if (!shouldWarn) return;
 
-    // Log deletion (optional) and persist warns
-    const warnsFile = path.join(process.cwd(), 'store', 'antilink_warns.json');
-
-    // Log deletion (optional) and persist warns
-    const warnsFile = path.join(process.cwd(), 'store', 'antilink_warns.json');
-
-    const readWarns = async () => {
-      try {
-        const data = await fs.readFile(warnsFile, 'utf8');
-        return JSON.parse(data || '{}');
-      } catch (e) {
-        return {};
-      }
-    };
-
-    const writeWarns = async (obj) => {
-      await fs.mkdir(path.dirname(warnsFile), { recursive: true });
-      await fs.writeFile(warnsFile, JSON.stringify(obj, null, 2), 'utf8');
-    };
-
     const warns = await readWarns();
-    // structure: { [groupId]: { [userId]: count } }
+    
+    // Initialize group warns if needed
     if (!warns[from]) warns[from] = {};
-    const current = warns[from][sender] ? Number(warns[from][sender]) : 0;
-    const updated = current + 1;
-    warns[from][sender] = updated;
+    
+    // Get current warns for user
+    const currentWarns = warns[from][sender] ? Number(warns[from][sender]) : 0;
+    const newWarns = currentWarns + 1;
+    
+    // Update warns
+    warns[from][sender] = newWarns;
     await writeWarns(warns);
 
     const maxWarns = 5;
-    if (updated >= maxWarns) {
-      // reset user's warns
+    
+    // ╔══════════════════════════════════════════════════════════════╗
+    // ║                   MAX WARNS REACHED - KICK                   ║
+    // ╚══════════════════════════════════════════════════════════════╝
+    if (newWarns >= maxWarns) {
       delete warns[from][sender];
       await writeWarns(warns);
 
-      // notify and remove
       try {
+        const kickMsg = getRandomMessage(kickMessages);
         await conn.sendMessage(from, {
-          text: `🚫 @${sender.split('@')[0]} has reached ${maxWarns} warnings and will be removed from the group.`,
+          text: `🚫 @${sender.split('@')[0]}\n\n⚠️ ${maxWarns} WARNINGS REACHED!\n${kickMsg}\n\n👋 Goodbye!`,
           mentions: [sender]
-        }, { quoted: m });
+        });
+        
+        // Remove the user
         await conn.groupParticipantsUpdate(from, [sender], 'remove');
+        console.log(`❌ User ${sender} removed after ${maxWarns} link warnings`);
       } catch (err) {
-        console.error('Failed to remove user after warns:', err);
-        reply('Could not remove the user, make sure the bot has admin rights.');
+        console.error('Failed to remove user after max warns:', err);
+        reply('⚠️ Could not remove user. Make sure the bot has admin rights.');
       }
-    } else {
-      // send warn message
+      return;
+    }
+
+    // ╔══════════════════════════════════════════════════════════════╗
+    // ║                    SEND WARNING MESSAGE                      ║
+    // ╚══════════════════════════════════════════════════════════════╝
+    try {
+      const warningBars = '═'.repeat(25);
+      const warnMessage = `
+╔${warningBars}╗
+║  ⚠️  WARNING ${newWarns}/${maxWarns}  ⚠️  ║
+╚${warningBars}╝
+
+🚫 @${sender.split('@')[0]}
+
+📌 NO LINKS ALLOWED IN THIS GROUP!
+
+⏰ Your current warnings: ${newWarns}/${maxWarns}
+⏰ After ${maxWarns} warnings you will be removed!
+
+🔗 Links detected and deleted.
+${newWarns >= 3 ? '🔴 BE CAREFUL - You\'re close to removal!' : ''}
+`;
+
+      await conn.sendMessage(from, {
+        text: warnMessage.trim(),
+        mentions: [sender]
+      });
+      
+      console.log(`⚠️ Warning ${newWarns}/${maxWarns} sent to ${sender}`);
+    } catch (err) {
+      console.error('Error sending warning:', err);
       try {
-        await conn.sendMessage(from, {
-          text: `⚠️ @${sender.split('@')[0]} Warning ${updated}/${maxWarns} — Posting links is not allowed. After ${maxWarns} warnings you will be removed.`,
-          mentions: [sender]
-        }, { quoted: m });
-      } catch (err) {
-        // fallback to reply
-        reply(`Warning ${updated}/${maxWarns} — Posting links is not allowed.`);
+        // Fallback message
+        reply(`⚠️ @${sender.split('@')[0]} Warning ${newWarns}/${maxWarns} - No links allowed!`);
+      } catch (e) {
+        console.error('Fallback message also failed');
       }
     }
+
   } catch (error) {
-    console.error(error);
-    reply("An error occurred while processing the message.");
+    console.error('Anti-link handler error:', error);
+    reply("⚠️ An error occurred in the anti-link system.");
   }
 });
