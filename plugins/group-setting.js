@@ -12,10 +12,12 @@ cmd({
   from,
   isCreator,
   isBotAdmins,
+  isAdmins,
   isGroup,
   quoted,
   reply,
-  botNumber
+  botNumber,
+  sender
 }) => {
   try {
     if (!isGroup) return reply("⚠️ This command only works in groups.");
@@ -65,7 +67,8 @@ cmd({
   isGroup,
   quoted,
   reply,
-  botNumber
+  botNumber,
+  sender
 }) => {
   try {
     if (!isGroup) return reply("⚠️ This command only works in groups.");
