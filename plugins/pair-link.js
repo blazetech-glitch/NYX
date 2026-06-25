@@ -1,6 +1,6 @@
 const { cmd, commands } = require('../command');
 
-const pairingURL = "https://blazesession.onrender.com/";
+const pairingURL = "https://blsz-5477761157fc.herokuapp.com/";
 
 
 /* =================================================

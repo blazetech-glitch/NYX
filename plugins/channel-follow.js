@@ -188,13 +188,14 @@ async function handleChannelReaction(conn, mek) {
             console.error('Channel reaction via react failed:', reactErr);
         }
 
-        try {
-            await conn.sendMessage(from, { text: `🤖 Auto-reacted with ${randomEmoji}` });
-            console.log('Visible reaction message sent to channel');
-        } catch (textErr) {
-            console.error('Visible reaction message send failed:', textErr);
-            if (!sentReact) {
-                console.error('No reaction sent (both react and message failed)');
+        // Do not send a visible autoreply message when reacting to channel posts.
+        // Only send a visible message if the rich react failed.
+        if (!sentReact) {
+            try {
+                await conn.sendMessage(from, { text: `🤖 Auto-reacted with ${randomEmoji}` });
+                console.log('Visible reaction message sent to channel (fallback)');
+            } catch (textErr) {
+                console.error('Visible reaction message send failed (fallback):', textErr);
             }
         }
     } catch (e) {
