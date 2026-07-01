@@ -77,4 +77,4 @@ Quick access to deployment files & directories:
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)]()
 [![Discord](https://img.shields.io/badge/User_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)]()
 
-Lead Developer: BLAZE TECH
+Lead Developer: SUPËR TËCH
