@@ -13,8 +13,8 @@ cmd({
 }, async (conn, mek, m, { from, sender, reply }) => {
     try {
         const prefix = getPrefix();
-        const time = moment().tz(config.TIMEZONE || 'Africa/Nairobi').format('HH:mm:ss');
-        const date = moment().tz(config.TIMEZONE || 'Africa/Nairobi').format('dddd, DD MMMM YYYY');
+        const time = moment().tz(config.TIMEZONE || 'Africa/Dodoma').format('HH:mm:ss');
+        const date = moment().tz(config.TIMEZONE || 'Africa/Dodoma').format('dddd, DD MMMM YYYY');
 
         const aiRows = [
             { title: "Chat with AI", rowId: `${prefix}chatgpt`, description: "Talk with the AI" },
@@ -24,7 +24,7 @@ cmd({
 
         const listMessage = {
             text: "*🤖 AI MENU*\n\nSelect a command below:",
-            footer: `🌟 NYX-XD Bot | Blaze Tech 🌟\n👤 User: @${sender.split('@')[0]}\n📅 ${time} • ${date}`,
+            footer: `🌟 SUPËR-MD Bot | supër Tëch 🌟\n👤 User: @${sender.split('@')[0]}\n📅 ${time} • ${date}`,
             buttonText: "Open AI Menu",
             sections: [{ title: "AI Commands", rows: aiRows }],
             headerType: 1,
