@@ -1,10 +1,10 @@
 {
-  "name": "NYX",
-  "description": "NYX WhatsApp bot",
+  "name": "SUPËR-MD",
+  "description": "SUPË-MD WhatsApp bot",
   "repository": "https://github.com/blazetech-glitch/NYX",
   "logo": "https://files.catbox.moe/kbbm5e.jpg",
   "keywords": [
-    "NYX"
+    "SUPËR-MD"
   ],
   "success_url": "/",
   "stack": "container",
@@ -17,7 +17,7 @@
     "STICKER_NAME": {
       "description": "type your sticker pack name.",
       "required": true,
-      "value": "NYX-XTR"
+      "value": "SUPËR-MD"
     },
     "PREFIX": {
       "description": "paste your bot prefix note! Don't apply null prefix.",
@@ -67,22 +67,22 @@
     "AUTO_STATUS_MSG": {
       "description": "Type custom message on status reply",
       "required": true,
-      "value": ".𝗦𝗘𝗘𝗡 𝗬𝗢𝗨𝗥 𝗦𝗧𝗔𝗧𝗨𝗦 𝗕𝗬 𝗡𝗬𝗫 𝗫𝗧𝗥🔄"
+      "value": ".𝗦𝗘𝗘𝗡 𝗬𝗢𝗨𝗥 𝗦𝗧𝗔𝗧𝗨𝗦 𝗕𝗬 SUPËR-MD🔄"
     },
     "OWNER_NAME": {
       "description": "Type Bot Owner Name.",
       "required": false,
-      "value": "BLAZE TEAM"
+      "value": "Këvøø😜"
     },
     "OWNER_NUMBER": {
       "description": "put the owner number for bot.",
       "required": false,
-      "value": "255627417402"
+      "value": "255618010036"
     },
     "BOT_NAME": {
       "description": "Type here the bot name.",
       "required": true,
-      "value": "NYX MD"
+      "value": "SUPËR-MD"
     },
     "ANTI_LINK": {
       "description": "Make it true if you want bot auto remove group link.",
@@ -112,7 +112,7 @@
     "DESCRIPTION": {
       "description": "add caption for menu and other",
       "required": true,
-      "value": "*© NYX MD bot*"
+      "value": "*© SUPËR-MD bot*"
     },
     "DELETE_LINKS": {
       "description": "remove links from group automatically without removing member",
@@ -142,7 +142,7 @@
     "CUSTOM_REACT_EMOJIS": {
       "description": "put here custom react react emojis.",
       "required": true,
-      "value": "💝,💖,💗,❤️‍🩹,❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍"
+      "value": "💝,💖,💗,❤️‍🩹,❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍,😜,😂,🤣,🥳"
     },
     "ANTI_DEL_PATH": {
       "description": "change it to -same- if you want to resend deleted message in same chat",
