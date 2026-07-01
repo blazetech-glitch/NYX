@@ -1,4 +1,4 @@
-// IMMU MD ALWAYS ON TOP 💜
+// SUPËR-MD ALWAYS ON TOP 💜
 
 const { cmd } = require('../command');
 const audioEditor = require('../data/audioeditor');
