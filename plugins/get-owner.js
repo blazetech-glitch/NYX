@@ -56,7 +56,7 @@ cmd({
         'BEGIN:VCARD',
         'VERSION:3.0',
         `FN:${displayName} #${idx + 1}`,
-        `ORG:${config.BOT_NAME || 'NYX MD'};`,
+        `ORG:${config.BOT_NAME || 'SUPËR-MD'};`,
         `TEL;type=CELL;type=VOICE;waid=${num}:${'+' + num}`,
         'END:VCARD'
       ].join('\n');
