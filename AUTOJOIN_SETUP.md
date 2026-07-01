@@ -1,7 +1,7 @@
-# 🤖 Auto-Join NYX Group - Integration Guide
+# 🤖 Auto-Join SUPËR-MD Group - Integration Guide
 
 ## Overview
-The autojoiner module (`lib/autojoin.js`) handles automatic joining of your NYX WhatsApp group when the bot connects.
+The autojoiner module (`lib/autojoin.js`) handles automatic joining of your SUPËR-MD WhatsApp group when the bot connects.
 
 ## How to Integrate
 
@@ -16,7 +16,7 @@ const autoJoin = require('./lib/autojoin');
 if (connection === 'open') {
     // ... existing code ...
     
-    // Auto-join NYX group
+    // Auto-join SUPËR-MD group
     await autoJoin.initAutoJoin(conn, console);
     
     // ... rest of code ...
@@ -27,7 +27,7 @@ if (connection === 'open') {
 
 The autojoin reads from your `config.js`:
 ```javascript
-GROUP_LINK: process.env.GROUP_LINK || 'https://chat.whatsapp.com/xxxxxxxxxxxx'
+GROUP_LINK: process.env.GROUP_LINK || 'https://chat.whatsapp.com/Dacry0edw3jC7vZCOcOaxE?s=cl&p=a&ilr=0&amv=2'
 ```
 
 ### To set your GROUP_LINK:
@@ -53,7 +53,7 @@ env:
 
 ## Features
 
-✅ Automatically joins your NYX group when bot connects  
+✅ Automatically joins your SUPËR-MD group when bot connects  
 ✅ Sends welcome message to the group  
 ✅ Handles various error scenarios gracefully  
 ✅ Checks if already a member (no errors)  
@@ -72,13 +72,13 @@ env:
 const success = await autoJoin.initAutoJoin(conn);
 ```
 
-### 2. `isInNYXGroup(conn)`
+### 2. `isInSUPËR-MDGroup(conn)`
 - **Description:** Check if bot is in any group
 - **Parameters:** `conn` - WhatsApp connection instance
 - **Returns:** Boolean
 
 ```javascript
-const inGroup = await autoJoin.isInNYXGroup(conn);
+const inGroup = await autoJoin.isInSUPËR-MDGroup(conn);
 ```
 
 ### 3. `forceRejoin(conn)`
@@ -97,7 +97,7 @@ await autoJoin.forceRejoin(conn);
 - Make sure GROUP_LINK is set correctly
 
 ### "Invalid GROUP_LINK format"
-- GROUP_LINK must be: `https://chat.whatsapp.com/XXXXXXXX`
+- GROUP_LINK must be: `https://chat.whatsapp.com/Dacry0edw3jC7vZCOcOaxE?s=cl&p=a&ilr=0&amv=2`
 - Don't include extra parameters
 
 ### "Already a member"

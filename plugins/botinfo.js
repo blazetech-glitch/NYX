@@ -30,7 +30,7 @@ cmd({
 ╭─────────────────────────────╮
 │ 📋 *DETAILS*
 ├─────────────────────────────┤
-│ 🏷️  Name: *${config.BOT_NAME || pkg.name || 'NYX MD'}*
+│ 🏷️  Name: *${config.BOT_NAME || pkg.name || 'SUPËR-MD'}*
 │ 👑 Owner: *${config.OWNER_NAME || 'Owner'}*
 │ 🔑 Prefix: *${config.PREFIX || '.'}*
 │ 📦 Version: *${pkg.version || '3.0.0'}*
