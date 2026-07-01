@@ -1,7 +1,7 @@
 {
-  "name": "nyx-md",
+  "name": "supër-md",
   "version": "3.0.0",
-  "description": "NYX WhatsApp Bot",
+  "description": "SUPËR-MD WhatsApp Bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
