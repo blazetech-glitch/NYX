@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: nyx-bot
+    name: supër-md-bot
     env: node
     plan: starter
     buildCommand: npm install
