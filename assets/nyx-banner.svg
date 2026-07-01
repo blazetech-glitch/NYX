@@ -8,14 +8,14 @@
       <stop offset="100%" stop-color="#0b0b16"/>
     </linearGradient>
 
-    <!-- NYX gradient -->
+    <!-- SUPËR gradient -->
     <linearGradient id="nyxGrad" x1="0" x2="1">
       <stop offset="0%" stop-color="#8A2BE2"/>
       <stop offset="50%" stop-color="#00FFFF"/>
       <stop offset="100%" stop-color="#8A2BE2"/>
     </linearGradient>
 
-    <!-- Blaze flame gradient -->
+    <!-- Supër flame gradient -->
     <linearGradient id="flameGrad" x1="0" x2="0" y1="0" y2="1">
       <stop offset="0%" stop-color="#ff00ff"/>
       <stop offset="50%" stop-color="#8A2BE2"/>
