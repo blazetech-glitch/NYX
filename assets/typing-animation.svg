@@ -33,7 +33,7 @@
   <rect class="background" width="300" height="80"/>
   
   <!-- WhatsApp-like message bubble -->
-  <text x="20" y="30" class="text">NYX MD is typing</text>
+  <text x="20" y="30" class="text">SUPËR-MD is typing</text>
   
   <!-- Animated dots -->
   <text x="80" y="50" class="dot dot1">●</text>
