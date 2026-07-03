@@ -10,20 +10,16 @@ function normalizeChannelJid(channelId) {
     const rawValue = channelId.toString().trim();
     if (!rawValue) return null;
 
-    if (rawValue.includes('@')) {
-        return rawValue;
-    }
-
     const channelMatch = rawValue.match(/channel\/([0-9A-Za-z-_]+)/i);
-    if (channelMatch?.[1]) {
-        return `${channelMatch[1]}@newsletter`;
-    }
+    const idPart = channelMatch?.[1] || rawValue.replace(/@.*$/, '').split('/').pop();
+    if (!idPart) return null;
 
-    if (/^\d+$/.test(rawValue)) {
-        return `${rawValue}@newsletter`;
-    }
+    return `${idPart}@newsletter`;
+}
 
-    return `${rawValue}@newsletter`;
+function getChannelBaseId(channelJid) {
+    const normalized = normalizeChannelJid(channelJid);
+    return normalized ? normalized.split('@')[0] : null;
 }
 
 // Function to read followed channels
@@ -78,12 +74,13 @@ cmd({
             followedChannels.push(normalizedJid);
             writeFollowedChannels(followedChannels);
 
-            // Try to follow the channel
+            // Try to follow the channel using the raw newsletter id
             try {
-                await conn.newsletterFollow(channelJid);
-                reply(`✅ *Followed and added to auto-react list:*\n${channelJid}`);
+                const followTarget = normalizedJid.split('@')[0];
+                await conn.newsletterFollow(followTarget);
+                reply(`✅ *Followed and added to auto-react list:*\n${normalizedJid}`);
             } catch (e) {
-                reply(`✅ *Added to auto-react list:*\n${channelJid}\n⚠️ *Note: Could not follow the channel automatically.*`);
+                reply(`✅ *Added to auto-react list:*\n${normalizedJid}\n⚠️ *Note: Could not follow the channel automatically.*`);
             }
 
         } catch (e) {
@@ -108,9 +105,14 @@ cmd({
                 return reply("*🫟 Example: .unfollow 120363421014261315@newsletter*");
             }
 
+            const normalizedJid = normalizeChannelJid(channelJid);
+            if (!normalizedJid || !normalizedJid.includes('@newsletter')) {
+                return reply("*❌ Invalid channel JID. It should be a newsletter channel e.g. 120363421014261315@newsletter*");
+            }
+
             let followedChannels = readFollowedChannels();
 
-            const index = followedChannels.indexOf(channelJid);
+            const index = followedChannels.indexOf(normalizedJid);
             if (index === -1) {
                 return reply("*ℹ️ This channel is not in the followed list.*");
             }
@@ -118,7 +120,7 @@ cmd({
             followedChannels.splice(index, 1);
             writeFollowedChannels(followedChannels);
 
-            reply(`✅ *Removed from auto-react list:*\n${channelJid}`);
+            reply(`✅ *Removed from auto-react list:*\n${normalizedJid}`);
 
         } catch (e) {
             console.error(e);
@@ -195,8 +197,8 @@ async function handleChannelReaction(conn, mek) {
         if (mek?.key?.fromMe || !incomingJids.length) return;
 
         const hasTargetedChannel = incomingJids.some((jid) => {
-            const normalized = normalizeChannelJid(jid);
-            return normalized && (targets.has(normalized) || normalized.includes('@newsletter') || normalized.includes('@broadcast'));
+            const incomingId = getChannelBaseId(jid);
+            return incomingId && [...targets].some((target) => getChannelBaseId(target) === incomingId);
         });
 
         if (!hasTargetedChannel) return;

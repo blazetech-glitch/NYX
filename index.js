@@ -5,7 +5,8 @@ if (process.env.NO_EXIT_ON_DISCONNECT !== 'true') {
   const originalError = console.error;
   const shouldExitOnDisconnect = (value) => {
     const text = String(value || '');
-    return /connection closed|connection terminated|reconnecting|loggedOut|AUTHENTICATION|BAD_SESSION|bad session|session error|disconnect/i.test(text);
+    if (/Failed to decrypt message|decrypt message with any known session/i.test(text)) return false;
+    return /\b(connection closed|connection terminated|loggedOut|AUTHENTICATION|BAD_SESSION|bad session|session error)\b/i.test(text);
   };
 
   const stopAndExit = (value) => {
