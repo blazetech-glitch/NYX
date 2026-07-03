@@ -145,55 +145,70 @@ cmd({
         }
     });
 
+function getConfiguredChannelTargets() {
+    const targets = new Set();
+    const addTarget = (value) => {
+        const normalized = normalizeChannelJid(value);
+        if (normalized) targets.add(normalized);
+    };
+
+    const envTargets = [process.env.AUTO_REACT_JIDS, process.env.CHANNEL_JIDS, process.env.NEWSLETTER_JIDS]
+        .filter(Boolean)
+        .join(',')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+    envTargets.forEach(addTarget);
+
+    readFollowedChannels().forEach(addTarget);
+    addTarget(config.NEWSLETTER_JID);
+    addTarget(config.CHANNEL_JID);
+    addTarget('120363424512102809');
+
+    return targets;
+}
+
 // Function to handle channel reactions
 async function handleChannelReaction(conn, mek) {
     try {
-        const followedChannels = readFollowedChannels();
-        const from = mek.key.remoteJid;
-        const channelId = normalizeChannelJid(config.NEWSLETTER_JID) || normalizeChannelJid(config.CHANNEL_JID);
-        const explicitChannelId = normalizeChannelJid('120363424512102809');
-        const allTargets = new Set([...followedChannels, channelId, explicitChannelId]);
+        if (String(config.AUTO_REACT).toLowerCase() !== 'true' && config.AUTO_REACT !== true) return;
 
-        console.log('handleChannelReaction called:', {
-            from,
-            isFromMe: mek.key?.fromMe,
-            messageKeys: Object.keys(mek.message || {}),
-            followedChannels
+        const targets = getConfiguredChannelTargets();
+        const remoteJid = mek?.key?.remoteJid;
+        const participant = mek?.key?.participant;
+        const sender = mek?.sender || participant || remoteJid;
+        const incomingJids = [remoteJid, participant, sender].filter(Boolean);
+
+        if (mek?.key?.fromMe || !incomingJids.length) return;
+
+        const hasTargetedChannel = incomingJids.some((jid) => {
+            const normalized = normalizeChannelJid(jid);
+            return normalized && (targets.has(normalized) || normalized.includes('@newsletter') || normalized.includes('@broadcast'));
         });
 
-        if (mek.key?.fromMe) return;
+        if (!hasTargetedChannel) return;
 
-        if (!from) return;
-
-        // Channel can be in @newsletter or @broadcast forms
-        const isChannel = allTargets.has(from) || from.includes('@newsletter') || from.includes('@broadcast');
-        if (!isChannel) return;
-
+        const from = remoteJid || participant || sender;
         const emojis = ['❤️', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🌷', '⛅', '🌟', '🗿', '🌝', '💜', '💙', '🖤', '💚'];
         const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-        console.log('Reacting to channel message with:', randomEmoji);
 
-        // Try to send a rich react first, then also send visible text emoji
         let sentReact = false;
         const reactionKey = {
             ...mek.key,
             remoteJid: from,
-            participant: mek.key.participant || from
+            participant: participant || from
         };
         try {
             await conn.sendMessage(from, { react: { text: randomEmoji, key: reactionKey } });
             sentReact = true;
-            console.log('Reaction sent to channel via react object');
         } catch (reactErr) {
             console.error('Channel reaction via react failed:', reactErr);
         }
 
-        // Do not send a visible autoreply message when reacting to channel posts.
-        // Only send a visible message if the rich react failed.
         if (!sentReact) {
             try {
                 await conn.sendMessage(from, { text: `🤖 Auto-reacted with ${randomEmoji}` });
-                console.log('Visible reaction message sent to channel (fallback)');
             } catch (textErr) {
                 console.error('Visible reaction message send failed (fallback):', textErr);
             }
