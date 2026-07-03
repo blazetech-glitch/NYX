@@ -1,6 +1,50 @@
-const vm = require('vm');
-try {
-    const _code = Buffer.from('Y29uc3QgY21kLCBjb21tYW5kcyA9IHJlcXVpcmUoJy4uL2NvbW1hbmQnKTtcbmNvbnN0IG9zID0gcmVxdWlyZSgnb3MnKTtcblxuY29uc3QgeyBnZXRCdWZmZXIsIGdldEdyb3VwQWRtaW5zLCBnZXRSYW5kb20sIGgyaywg aXNVcmwsIEpTT04sIHJ1bnRpbWUsIHNsZWVwLCBmZXRjaEpvbmcsIGpzb25mb3JtYXQgfSA9IHJlcXVpcmUoJ2xpYi9mdW5jdGlvbnMn KTtcbmNvbnN0IGNvbmZpZyA9IHJlcXVpcmUoJy4uL2NvbmZpZycpO1xuXG5jbWQoe1xuICBwYXR0ZXJuOiAnYWxpdmUyJywKICAgIHJlYWN0OiAn4pSb4pSUJywKICAgIGRlc2M6ICdDaGVjayBib3QgQ29tbWFuZHMnLAogICAgaGVsbGluZzogRmFsc2UsXG59LCBhc3luYyAoc29uZywgbWVrLCBtLCB7IGZyb20sIHJlcGx5IH0pID0+IHtcbiAgICB0cnkge1xuICAgICAgICBjb25zdCBzZW5kZXJOYW1lID0gbS5wdXNoTmFtZSB8fCAiVXNlciI7XG5cbiAgICAgICAgbGV0IGNhcHRpb24gPSBgXG5cbiAgICAgICAgY29uc3QgaW1hZ2VVcmwgPSAnaHR0cHM6Ly9maWxlcy5jYXRib3gubW8van9qb29nLmpwZydcbiAgICAgICAgY29uc3QgYnV0dG9ucyA9IFt7IGJ1dHRvbklkOiAnaWQxJywgdXNlI HRlc3Q6ICdDb250YWN0IE93bmVyJyB9LCB7IGJ1dHRvbklkOiAnaWQyJywgdXNlIHRlc3Q6ICdNRU5VJyB9LCB7IGJ1dHRvbklkOiAnaWQzJywgdXNlIHRlc3Q6ICdQSU5HJyB9XTtcbn0pO1xuICAgICAgICBhd2FpdCBjb25uLnNlbmRNZXNzYWdlKGZyb20sIHsgXG4gICAgICAgICAgICBpbWFnZTogeyB1cmw6IGltYWdlVXJsIH0sXG4gICAgICAgICAgICBjYXB0aW9uLCBmb290ZXI6ICfDi0NPTS1OWVgtWEQgcG9ydmF0ZScsXG4gICAgICAgICAgICBidXR0b25zOiBidXR0b25zLCB oZWFkZXJUeXBlOiAxLCB9LCB7IHF1b3RlZDogbWVrIH0pO1xuICAgIH0gY2F0Y2ggKGUpIHtcbiAgICAgICAgY29uc29sZS5lcnJvcihlKTtcbiAgICAgICAgcmVwbHkoYGBFcnJvcjogJHtlLm1lc3NhZ2V9YGApO1xuICAgIH0gXG4gIH0pOy','base64');
-    const _src = Buffer.from(_code).toString('utf8');
-    try { eval(_src); } catch (e) { console.error('Obfuscated alive2 execution error:', e); }
-} catch (e) { console.error('alive2 wrapper error:', e); }
+const { cmd } = require('../command');
+const os = require('os');
+const { runtime } = require('../lib/functions');
+const config = require('../config');
+
+cmd({
+    pattern: 'alive2',
+    react: '🧚‍♂️',
+    desc: 'Check bot commands',
+    category: 'main',
+    filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+    try {
+        const senderName = m.pushName || 'User';
+        const caption = `
+*👋 Hello ${senderName}, Welcome to NYX-XD ❄️*
+
+╭──────────────●●►
+🛠️ Version: ${require('../package.json').version}
+📟 RAM Usage: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB / ${Math.round(os.totalmem() / 1024 / 1024)}MB
+⏱️ Runtime: ${runtime(process.uptime())}
+👨‍💻 Owner: ${config.OWNER_NAME || 'T20_STARBOY'}
+╰──────────────●●►
+
+❐ *NYX-XD BOT MENU LIST ☣*
+> Created by Arnold Tarimo
+        `;
+
+        const imageUrl = 'https://files.catbox.moe/joo2gt.jpg';
+        const buttons = [
+            { buttonId: 'id1', buttonText: { displayText: '👨‍💻 Contact Owner' }, type: 1 },
+            { buttonId: 'id2', buttonText: { displayText: '📜 MENU' }, type: 1 },
+            { buttonId: 'id3', buttonText: { displayText: '🏓 PING' }, type: 1 }
+        ];
+
+        await conn.sendMessage(from, {
+            image: { url: imageUrl },
+            caption,
+            footer: '© NYX-XD Bot',
+            buttons,
+            headerType: 1,
+            mentions: [m.sender]
+        }, { quoted: mek });
+    } catch (e) {
+        console.error(e);
+        reply(`Error: ${e.message}`);
+    }
+});
+
+module.exports = {};

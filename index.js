@@ -1,5 +1,19 @@
 const _0x235586 = _0x2e91; (function (_0x39af83, _0x5d60f1) { const _0x180fa3 = _0x2e91, _0x42bf08 = _0x39af83(); while (!![]) { try { const _0x1ccca9 = -parseInt(_0x180fa3(0x13a)) / 0x1 + parseInt(_0x180fa3(0x1e9)) / 0x2 + -parseInt(_0x180fa3(0x131)) / 0x3 * (-parseInt(_0x180fa3(0x173)) / 0x4) + -parseInt(_0x180fa3(0x1fe)) / 0x5 * (-parseInt(_0x180fa3(0x1c2)) / 0x6) + -parseInt(_0x180fa3(0x145)) / 0x7 + parseInt(_0x180fa3(0x195)) / 0x8 + parseInt(_0x180fa3(0x11e)) / 0x9 * (-parseInt(_0x180fa3(0x21e)) / 0xa); if (_0x1ccca9 === _0x5d60f1) break; else _0x42bf08['push'](_0x42bf08['shift']()); } catch (_0x67664e) { _0x42bf08['push'](_0x42bf08['shift']()); } } }(_0x1b8b, 0x7efe2)); function a0_0x1ae8(_0x1705c9, _0x2b2a88) { _0x1705c9 = _0x1705c9 - 0x16e; const _0x13dcd4 = a0_0x36d2(); let _0x1d902f = _0x13dcd4[_0x1705c9]; return _0x1d902f; }
 
+const originalProcessExit = process.exit.bind(process);
+const shouldSuppressProcessExit = (value) => {
+  const text = String(value || '');
+  return /Failed to decrypt message|decrypt message with any known session|Bad MAC|verifyMAC|Bad session|Session error|AUTHENTICATION|loggedOut|connection closed|connection terminated|socket disconnected|session error/i.test(text);
+};
+
+process.exit = (code) => {
+  if (shouldSuppressProcessExit(code) || shouldSuppressProcessExit(new Error().stack)) {
+    console.warn('⚠️ Suppressing forced process exit for a transient auth/session disconnect.');
+    return;
+  }
+  return originalProcessExit(code);
+};
+
 if (process.env.NO_EXIT_ON_DISCONNECT !== 'true') {
   const originalLog = console.log;
   const originalError = console.error;
