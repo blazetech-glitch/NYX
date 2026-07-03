@@ -1,16 +1,16 @@
-HttpClient client = HttpClient.newHttpClient();
+const { cmd } = require('../command');
 
-String json = """
-{
-  "path": "status.jpg",
-  "caption": "🔥 New update!"
-}
-""";
-
-HttpRequest request = HttpRequest.newBuilder()
-    .uri(URI.create("http://localhost:3000/status/image"))
-    .header("Content-Type", "application/json")
-    .POST(HttpRequest.BodyPublishers.ofString(json))
-    .build();
-
-client.send(request, HttpResponse.BodyHandlers.ofString());
+cmd({
+  pattern: 'grouppost',
+  alias: ['group-post', 'grouplink'],
+  desc: 'Placeholder for group post features',
+  category: 'group',
+  filename: __filename
+}, async (conn, mek, m, { reply }) => {
+  try {
+    return reply('Group post feature is temporarily unavailable.');
+  } catch (e) {
+    console.error('grouppost error:', e);
+    return reply('Error handling grouppost command.');
+  }
+});
