@@ -7,12 +7,23 @@ const followedChannelsFile = path.join(__dirname, '../assets/followed_channels.j
 
 function normalizeChannelJid(channelId) {
     if (!channelId) return null;
-    channelId = channelId.toString().trim();
-    if (!channelId) return null;
-    if (!channelId.includes('@')) {
-        return `${channelId}@newsletter`;
+    const rawValue = channelId.toString().trim();
+    if (!rawValue) return null;
+
+    if (rawValue.includes('@')) {
+        return rawValue;
     }
-    return channelId;
+
+    const channelMatch = rawValue.match(/channel\/([0-9A-Za-z-_]+)/i);
+    if (channelMatch?.[1]) {
+        return `${channelMatch[1]}@newsletter`;
+    }
+
+    if (/^\d+$/.test(rawValue)) {
+        return `${rawValue}@newsletter`;
+    }
+
+    return `${rawValue}@newsletter`;
 }
 
 // Function to read followed channels
@@ -164,6 +175,7 @@ function getConfiguredChannelTargets() {
     readFollowedChannels().forEach(addTarget);
     addTarget(config.NEWSLETTER_JID);
     addTarget(config.CHANNEL_JID);
+    addTarget(config.CHANNEL_LINK);
     addTarget('120363424512102809');
 
     return targets;
