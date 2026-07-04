@@ -25,8 +25,7 @@ if (process.env.NO_EXIT_ON_DISCONNECT !== 'true') {
 
   const stopAndExit = (value) => {
     if (shouldExitOnDisconnect(value)) {
-      originalError('⚠️ Socket disconnected. Exiting process to allow the host to restart with a fresh session.');
-      process.exit(1);
+      originalError('⚠️ Socket disconnected. The bot will stay running and retry the connection instead of exiting.');
     }
   };
 
