@@ -114,6 +114,17 @@ const containsLink = (text) => {
 // Helper: Get random fun message
 const getRandomMessage = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
+// Helper: Resolve max warnings from config with a safe fallback
+const getMaxWarns = () => {
+  const configured = Number(config.ANTI_LINK_MAX_WARNS ?? 5);
+  return Number.isFinite(configured) && configured > 0 ? configured : 5;
+};
+
+const isEnabledSetting = (value) => {
+  const normalized = String(value ?? '').toLowerCase();
+  return ['true', 'on', 'enable', 'enabled', '1'].includes(normalized);
+};
+
 // Main Anti-Link Handler
 cmd({
   'on': "body"
@@ -155,11 +166,11 @@ cmd({
     }
 
     // Check global setting and per-group override for anti-link
-    let antiLinkEnabled = config.ANTI_LINK === 'true';
+    let antiLinkEnabled = isEnabledSetting(config.ANTI_LINK);
     try {
       const override = await pluginSettings.get(from, 'antilink');
       if (override !== undefined) {
-        antiLinkEnabled = (override === true || String(override) === 'true' || String(override).toLowerCase() === 'on');
+        antiLinkEnabled = isEnabledSetting(override);
       }
     } catch (err) {
       console.error('Error reading antilink plugin setting:', err);
@@ -183,7 +194,7 @@ cmd({
     console.log(`🚫 Link detected from non-admin ${sender} in ${from}`);
 
     // Determine action mode
-    const defaultAction = config.DELETE_LINKS === 'true' ? 'delete_warn' : 'warn';
+    const defaultAction = 'delete_warn';
     let antilinkAction = (config.ANTI_LINK_ACTION || defaultAction).toString().toLowerCase();
     
     try {
@@ -193,21 +204,18 @@ cmd({
       console.error('Error reading antilink_action setting:', err);
     }
 
-    const shouldDelete = antilinkAction.startsWith('delete');
     const shouldWarn = antilinkAction.includes('warn');
     const shouldKick = antilinkAction.includes('kick') || String(config.ANTI_LINK_KICK) === 'true';
 
     // ╔══════════════════════════════════════════════════════════════╗
     // ║                      DELETE MESSAGE                          ║
     // ╚══════════════════════════════════════════════════════════════╝
-    if (shouldDelete) {
-      try {
-        // Force delete using the exact message key
-        await conn.sendMessage(from, { delete: m.key });
-        console.log(`✅ Link message DELETED from ${sender}`);
-      } catch (err) {
-        console.error('Failed to delete message:', err.message);
-      }
+    try {
+      // Always delete the offending link message to keep the group clean.
+      await conn.sendMessage(from, { delete: m.key });
+      console.log(`✅ Link message DELETED from ${sender}`);
+    } catch (err) {
+      console.error('Failed to delete message:', err.message);
     }
 
     // ╔══════════════════════════════════════════════════════════════╗
@@ -251,7 +259,7 @@ cmd({
       warns[from][sender] = newWarns;
       await writeWarns(warns);
 
-      const maxWarns = 5;
+      const maxWarns = getMaxWarns();
       
       // ╔══════════════════════════════════════════════════════════════╗
       // ║                   MAX WARNS REACHED - KICK                   ║
@@ -297,6 +305,7 @@ cmd({
 🔗 *Action:* Link deleted immediately
 📊 *Warnings:* ${newWarns}/${maxWarns}
 ⏳ *Remaining:* ${warningsLeft} more warning${warningsLeft === 1 ? '' : 's'}
+🛑 *Outcome:* Reaching ${maxWarns} warnings will remove you from the group
 
 *Progress:* [${progressBar}]
 
@@ -317,6 +326,14 @@ cmd({
           text: warningText,
           mentions: [sender]
         });
+
+        try {
+          await conn.sendMessage(sender, {
+            text: `⚠️ Your link message was removed in this group. Warning ${newWarns}/${maxWarns}. ${warningsLeft > 0 ? `${warningsLeft} warning${warningsLeft === 1 ? '' : 's'} left before removal.` : 'This was your final warning.'}`
+          });
+        } catch (dmErr) {
+          console.error('Failed to send warning DM:', dmErr.message);
+        }
         
         console.log(`⚠️ Warning ${newWarns}/${maxWarns} sent to ${sender}`);
       } catch (err) {

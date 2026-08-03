@@ -21,11 +21,11 @@ cmd({
 
         // supported: on/true/enable, off/false/disable, delete on/off
         if (['on', 'true', 'enable'].includes(sub)) {
-            cfg.ANTI_LINK = 'true';
+            cfg.ANTI_LINK = 'on';
             // persist
             try {
                 const raw = fs.readFileSync(cfgPath, 'utf8');
-                const updated = raw.replace(/ANTI_LINK:\s*process\.env\.ANTI_LINK\s*\|\|\s*["'].*?["']\s*,/i, `ANTI_LINK: process.env.ANTI_LINK || "true",`);
+                const updated = raw.replace(/ANTI_LINK:\s*process\.env\.ANTI_LINK\s*\|\|\s*["'].*?["']\s*,/i, `ANTI_LINK: process.env.ANTI_LINK || "on",`);
                 fs.copyFileSync(cfgPath, cfgPath + '.bak');
                 fs.writeFileSync(cfgPath, updated, 'utf8');
             } catch (err) {
@@ -47,10 +47,10 @@ cmd({
         }
 
         if (['off', 'false', 'disable'].includes(sub)) {
-            cfg.ANTI_LINK = 'false';
+            cfg.ANTI_LINK = 'off';
             try {
                 const raw = fs.readFileSync(cfgPath, 'utf8');
-                const updated = raw.replace(/ANTI_LINK:\s*process\.env\.ANTI_LINK\s*\|\|\s*["'].*?["']\s*,/i, `ANTI_LINK: process.env.ANTI_LINK || "false",`);
+                const updated = raw.replace(/ANTI_LINK:\s*process\.env\.ANTI_LINK\s*\|\|\s*["'].*?["']\s*,/i, `ANTI_LINK: process.env.ANTI_LINK || "off",`);
                 fs.copyFileSync(cfgPath, cfgPath + '.bak');
                 fs.writeFileSync(cfgPath, updated, 'utf8');
             } catch (err) {

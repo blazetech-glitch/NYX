@@ -16,7 +16,7 @@ module.exports = {
     // make true if you want auto reply on status
     AUTO_STATUS_MSG: process.env.AUTO_STATUS_MSG || ".𝗦𝗘𝗘𝗡 𝗬𝗢𝗨𝗥 𝗦𝗧𝗔𝗧𝗨𝗦 𝗕𝗬 𝗣𝗢𝗣𝗞𝗜𝗗 𝗫𝗧𝗥🔄",
     // set the auto reply massage on status reply
-    ANTI_LINK: process.env.ANTI_LINK || "true",
+    ANTI_LINK: process.env.ANTI_LINK || "on",
     // make anti link true,false for groups
     MENTION_REPLY: process.env.MENTION_REPLY || "true",
     // make true if want auto voice reply if someone menetion you
