@@ -1,4 +1,4 @@
-# NYX MD - WhatsApp Bot
+# KËVØŌ-MD - WhatsApp Bot
 <p align="center">
   <img src="assets/nyx-banner.svg" width="100%" />
 </p>
