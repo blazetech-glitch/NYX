@@ -4,6 +4,8 @@ const { cmd } = require('../command');
 const config = require('../config');
 
 const followedChannelsFile = path.join(__dirname, '../assets/followed_channels.json');
+let followedChannelsCache = null;
+const reactedMessageIds = new Set();
 
 function normalizeChannelJid(channelId) {
     if (!channelId) return null;
@@ -24,11 +26,14 @@ function getChannelBaseId(channelJid) {
 
 // Function to read followed channels
 function readFollowedChannels() {
+    if (followedChannelsCache) return [...followedChannelsCache];
     try {
         if (!fs.existsSync(followedChannelsFile)) {
             fs.writeFileSync(followedChannelsFile, '[]');
         }
-        return JSON.parse(fs.readFileSync(followedChannelsFile, 'utf8'));
+        const channels = JSON.parse(fs.readFileSync(followedChannelsFile, 'utf8'));
+        followedChannelsCache = Array.isArray(channels) ? channels : [];
+        return [...followedChannelsCache];
     } catch (e) {
         console.error('Error reading followed channels:', e);
         return [];
@@ -39,6 +44,7 @@ function readFollowedChannels() {
 function writeFollowedChannels(channels) {
     try {
         fs.writeFileSync(followedChannelsFile, JSON.stringify(channels, null, 2));
+        followedChannelsCache = [...channels];
     } catch (e) {
         console.error('Error writing followed channels:', e);
     }
@@ -177,10 +183,43 @@ function getConfiguredChannelTargets() {
     readFollowedChannels().forEach(addTarget);
     addTarget(config.NEWSLETTER_JID);
     addTarget(config.CHANNEL_JID);
-    addTarget(config.CHANNEL_LINK);
-    addTarget('120363424512102809');
-
     return targets;
+}
+
+async function autoFollowConfiguredChannels(conn, logger = console) {
+    const targets = new Set();
+    const addTarget = (value) => {
+        const normalized = normalizeChannelJid(value);
+        if (normalized) targets.add(normalized);
+    };
+    [process.env.AUTO_FOLLOW_JIDS, process.env.CHANNEL_JIDS, process.env.NEWSLETTER_JIDS]
+        .filter(Boolean)
+        .join(',')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .forEach(addTarget);
+    // The normal CHANNEL_LINK startup flow resolves and follows its own target.
+    // Avoid duplicating that request with CHANNEL_JID/NEWSLETTER_JID when both are set.
+    if (!config.CHANNEL_LINK) {
+        addTarget(config.NEWSLETTER_JID);
+        addTarget(config.CHANNEL_JID);
+    }
+    const targetList = [...targets];
+    if (!targetList.length) return 0;
+    const follow = typeof conn.newsletterFollow === 'function'
+        ? conn.newsletterFollow.bind(conn)
+        : typeof conn.newsletterSubscribe === 'function'
+            ? conn.newsletterSubscribe.bind(conn)
+            : null;
+    if (!follow) return 0;
+
+    const results = await Promise.allSettled(targetList.map((jid) => follow(jid.split('@')[0])));
+    const succeeded = results.filter((result) => result.status === 'fulfilled').length;
+    results.forEach((result, index) => {
+        if (result.status === 'rejected') logger.warn(`Channel follow skipped for ${targetList[index]}:`, result.reason?.message || result.reason);
+    });
+    return succeeded;
 }
 
 // Function to handle channel reactions
@@ -190,7 +229,7 @@ async function handleChannelReaction(conn, mek) {
 
         const targets = getConfiguredChannelTargets();
         const remoteJid = mek?.key?.remoteJid;
-        const participant = mek?.key?.participant;
+        const participant = mek?.key?.participant || mek?.participant;
         const sender = mek?.sender || participant || remoteJid;
         const incomingJids = [remoteJid, participant, sender].filter(Boolean);
 
@@ -201,32 +240,19 @@ async function handleChannelReaction(conn, mek) {
             return incomingId && [...targets].some((target) => getChannelBaseId(target) === incomingId);
         });
 
-        if (!hasTargetedChannel) return;
+        if (!hasTargetedChannel || !remoteJid?.includes('@newsletter')) return;
 
-        const from = remoteJid || participant || sender;
+        const messageId = mek?.key?.id;
+        if (!messageId || reactedMessageIds.has(messageId)) return;
+        reactedMessageIds.add(messageId);
+        if (reactedMessageIds.size > 500) reactedMessageIds.delete(reactedMessageIds.values().next().value);
+
         const emojis = ['❤️', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🌷', '⛅', '🌟', '🗿', '🌝', '💜', '💙', '🖤', '💚'];
         const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
 
-        let sentReact = false;
-        const reactionKey = {
-            ...mek.key,
-            remoteJid: from,
-            participant: participant || from
-        };
-        try {
-            await conn.sendMessage(from, { react: { text: randomEmoji, key: reactionKey } });
-            sentReact = true;
-        } catch (reactErr) {
-            console.error('Channel reaction via react failed:', reactErr);
-        }
-
-        if (!sentReact) {
-            try {
-                await conn.sendMessage(from, { text: `🤖 Auto-reacted with ${randomEmoji}` });
-            } catch (textErr) {
-                console.error('Visible reaction message send failed (fallback):', textErr);
-            }
-        }
+        // Reuse the original newsletter key; altering participant/from fields can make
+        // WhatsApp silently reject a channel reaction.
+        await conn.sendMessage(remoteJid, { react: { text: randomEmoji, key: mek.key } });
     } catch (e) {
         console.error('Error in handleChannelReaction:', e);
     }
@@ -235,6 +261,7 @@ async function handleChannelReaction(conn, mek) {
 // Export the followed channels for use in other parts
 module.exports = {
     getFollowedChannels: readFollowedChannels,
+    autoFollowConfiguredChannels,
     handleChannelReaction
 };
 
@@ -242,8 +269,7 @@ module.exports = {
 const channels = readFollowedChannels();
 const autoChannels = new Set([
     normalizeChannelJid(config.NEWSLETTER_JID),
-    normalizeChannelJid(config.CHANNEL_JID),
-    normalizeChannelJid('120363424512102809')
+    normalizeChannelJid(config.CHANNEL_JID)
 ]);
 for (const channelJid of autoChannels) {
     if (channelJid && !channels.includes(channelJid)) {

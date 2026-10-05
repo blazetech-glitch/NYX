@@ -2,6 +2,7 @@ const config = require('../config');
 const { cmd, commands } = require('../command');
 const { runtime } = require('../lib/functions');
 const axios = require('axios');
+const { getMainImage } = require('../lib/branding');
 
 function isEnabled(value) {
     return value && value.toString().toLowerCase() === "true";
@@ -74,7 +75,7 @@ async (conn, mek, m, { from, quoted, reply, isCreator }) => {
         await conn.sendMessage(
             from,
             {
-                image: { url: config.MENU_IMAGE_URL },
+                image: getMainImage() || { url: config.MENU_IMAGE_URL },
                 caption: envSettings,
                 contextInfo: {
                     mentionedJid: [m.sender],

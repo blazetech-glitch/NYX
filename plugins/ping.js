@@ -1,48 +1,35 @@
 const config = require('../config');
-const { cmd, commands } = require('../command');
+const { cmd } = require('../command');
 const { runtime } = require('../lib/functions');
+const { getMainImage } = require('../lib/branding');
+const { userTag, context, image, version } = require('../lib/ui');
 
 cmd({
-    pattern: "ping",
-    alias: ["speed", "pong", "ping2"],
-    desc: "Check bot's response time.",
-    category: "main",
-    react: "⚡",
-    filename: __filename
-},
-    async (conn, mek, m, { from, quoted, sender, reply }) => {
-        try {
-            const start = Date.now();
-            const loading = await conn.sendMessage(from, { text: '*Pinging...*' });
+  pattern: 'ping',
+  alias: ['speed', 'pong', 'ping2'],
+  desc: "Check bot's response time",
+  category: 'main',
+  react: '⚡',
+  filename: __filename
+}, async (conn, mek, m, { from, sender, reply }) => {
+  try {
+    const caption = `╭━━━〔 *${config.BOT_NAME || 'NYX MD'}* 〕━━━╮
+┃        *PONG · ONLINE*
+╰━━━━━━━━━━━━━━━━━━━━╯
 
-            // small reaction for flair
-            try { await conn.sendMessage(from, { react: { text: '⚡', key: mek.key } }) } catch (e) { }
+│ ⏱ *Uptime*   ${runtime(process.uptime())}
+│ ◈ *Version*  ${version()}
+│ ● *Status*   Ready
 
-            const end = Date.now();
-            const latency = end - start; // ms
-            const up = runtime(process.uptime());
+_Requested by ${userTag(sender)}_`;
 
-            const caption = `╭─❒ *${config.BOT_NAME}* ❒─╮
-│
-├─ ⚡ *Pong!* ${['🚀', '🌟', '💫', '🔥'][Math.floor(Math.random() * 4)]}
-├─ 📶 *Latency:* _${latency} ms_
-├─ ⏱️ *Uptime:* _${up}_
-│
-╰─❒ *${config.OWNER_NAME}* ❒─╯
-
-> *Powered by NYX MD* ✨`;
-
-            await conn.sendMessage(from, {
-                image: { url: config.MENU_IMAGE_URL },
-                caption: caption,
-                contextInfo: { mentionedJid: [sender] }
-            }, { quoted: loading }).catch(() => {
-                // fallback to text only
-                conn.sendMessage(from, { text: caption }, { quoted: loading }).catch(() => { });
-            });
-
-        } catch (e) {
-            console.error("Error in ping command:", e);
-            reply(`An error occurred: ${e.message}`);
-        }
-    });
+    await conn.sendMessage(from, {
+      image: image(config, getMainImage),
+      caption,
+      contextInfo: context(sender)
+    }, { quoted: mek });
+  } catch (error) {
+    console.error('Ping Error:', error);
+    await reply('Ping failed. Please try again.');
+  }
+});

@@ -1,5 +1,6 @@
 const config = require('../config');
 const { cmd } = require('../command');
+const { getMainImage } = require('../lib/branding');
 
 // Track recent mentions to prevent duplicates
 const recentMentions = new Set();
@@ -48,9 +49,10 @@ cmd({
 *Made with ❤️ by ${config.OWNER_NAME || 'BLAZE TEAM'}*`;
 
     try {
+      const mainImage = getMainImage();
       // Send image with caption
       await conn.sendMessage(m.chat, {
-        image: { url: config.MENU_IMAGE_URL || "https://files.catbox.moe/kbbm5e.jpg" },
+        image: mainImage || { url: config.MENU_IMAGE_URL || "https://files.catbox.moe/kbbm5e.jpg" },
         caption: mentionText,
         contextInfo: {
           mentionedJid: [m.sender],
@@ -67,9 +69,6 @@ cmd({
           }
         }
       }, { quoted: m });
-
-      // Add delay before sending audio
-      await new Promise(r => setTimeout(r, 1000));
 
       // Send audio file
       await conn.sendMessage(m.chat, {

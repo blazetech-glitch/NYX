@@ -1,81 +1,50 @@
 const { cmd, commands } = require('../command');
 const os = require('os');
-const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson, jsonformat } = require('../lib/functions');
+const { runtime } = require('../lib/functions');
 const config = require('../config');
+const { getMainImage } = require('../lib/branding');
+const { userTag, context, image, version } = require('../lib/ui');
 
 cmd({
-    pattern: 'alive',
-    alias: ['status', 'live'],
-    desc: 'Check uptime and system status',
-    category: 'main',
-    react: '🟢',
-    filename: __filename
-},
-    async (conn, mek, m, { from, sender, reply }) => {
-        try {
-            const totalCmds = commands.length;
-            const up = runtime(process.uptime());
+  pattern: 'alive',
+  alias: ['status', 'live'],
+  desc: 'Check uptime and system status',
+  category: 'main',
+  react: '🟢',
+  filename: __filename
+}, async (conn, mek, m, { from, sender, reply }) => {
+  try {
+    const memory = process.memoryUsage();
+    const usedMB = (memory.heapUsed / 1024 / 1024).toFixed(1);
+    const totalMB = (memory.heapTotal / 1024 / 1024).toFixed(1);
+    const cpu = os.cpus()[0]?.model || 'Unknown';
+    const status = `╭━━━〔 *${config.BOT_NAME || 'NYX MD'}* 〕━━━╮
+┃  *SYSTEM STATUS*
+╰━━━━━━━━━━━━━━━━━━━━╯
 
-            const mem = process.memoryUsage();
-            const usedMB = (mem.heapUsed / 1024 / 1024).toFixed(2);
-            const totalMB = (mem.heapTotal / 1024 / 1024).toFixed(2);
+┌─〔 HEALTH 〕
+│ ● Online and ready
+│ ⏱ Uptime   ${runtime(process.uptime())}
+│ ⚡ Prefix   ${config.PREFIX || '.'}
+│ ◈ Version  ${version()}
+│ ◇ Commands ${commands.length}
+└──────────────
 
-            const platform = `${os.type()} ${os.release()} ${os.arch()}`;
-            const cpu = os.cpus()[0].model;
+┌─〔 RUNTIME 〕
+│ Memory  ${usedMB} MB / ${totalMB} MB
+│ Host    ${os.platform()} · ${os.arch()}
+│ CPU     ${cpu.slice(0, 34)}${cpu.length > 34 ? '…' : ''}
+└──────────────
 
-            const status = `╔═════════════════════════╗
-║    ✨ *${config.BOT_NAME || 'NYX MD'}* ✨    ║
-║   🤖 STATUS: ALIVE...🧚‍♂️   ║
-╚═════════════════════════╝
+_Requested by ${userTag(sender)}_`;
 
-╭
-│ 👑 Owner: ${config.OWNER_NAME || 'Owner'}
-│ 🔑 Prefix: ${config.PREFIX || '.'}
-│ 🏷️ Version: 3.0.0
-│ 📦 Commands: ${totalCmds}
-│ ⏱️ Uptime: ${up}
-│ 💾 Memory: ${usedMB}MB / ${totalMB}MB
-│ 🖥️ Platform: ${platform}
-│ ⚙️ CPU: ${cpu.substring(0, 30)}...
-├─────────────────────────────┤
-
-*> Made with ❤️ by BLAZE TECH*`;
-
-            const buttons = [
-                {
-                    buttonId: ".owner",
-                    buttonText: { displayText: "❭❭ 𝗢𝗪𝗡𝗘𝗥🧑‍💻" },
-                    type: 1
-                },
-                {
-                    buttonId: ".ping",
-                    buttonText: { displayText: "❭❭ 𝗣𝗜𝗡𝗚📍" },
-                    type: 1
-                },
-                {
-                    buttonId: ".menu",
-                    buttonText: { displayText: "❭❭ MENU 📂" },
-                    type: 1
-                }
-            ];
-
-            await conn.sendMessage(
-                from,
-                {
-                    image: { url: config.ALIVE_IMG },
-                    caption: status,
-                    buttons,
-                    headerType: 1,
-                    viewOnce: true,
-                    contextInfo: {
-                        mentionedJid: [sender]
-                    }
-                },
-                { quoted: mek }
-            );
-
-        } catch (e) {
-            console.error("Alive Error:", e);
-            reply(`❌ Error: ${e.message}`);
-        }
-    });
+    await conn.sendMessage(from, {
+      image: image(config, getMainImage),
+      caption: status,
+      contextInfo: context(sender)
+    }, { quoted: mek });
+  } catch (error) {
+    console.error('Alive Error:', error);
+    await reply('Unable to render the status card right now.');
+  }
+});

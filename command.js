@@ -1,6 +1,7 @@
 var commands = [];
 const config = require('./config');
 const { getPrefix } = require('./lib/prefix');
+const { normalizePermissions } = require('./lib/permissions');
 
 function _normalizeJid(num) {
     if (!num) return num;
@@ -22,6 +23,7 @@ function cmd(info, func) {
         try {
             const args = Array.from(arguments);
             const meta = args[3] || {};
+            normalizePermissions(args[0], args[2], meta);
             const sender = meta.sender || meta.from || (args[2] && args[2].sender) || null;
             const isPrivateMode = (config.MODE === 'private' || String(config.PUBLIC_MODE) === 'false');
             if (isPrivateMode && sender && !_isOwnerJid(sender)) {

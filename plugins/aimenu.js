@@ -29,7 +29,7 @@ cmd({
             sections: [{ title: "AI Commands", rows: aiRows }],
             headerType: 1,
             contextInfo: { mentionedJid: [sender] },
-            image: { url: "https://files.catbox.moe/kbbm5e.jpg" }
+            image: require('../lib/branding').getMainImage() || { url: 'https://files.catbox.moe/kbbm5e.jpg' }
         };
 
         await conn.sendMessage(from, listMessage, { quoted: mek });

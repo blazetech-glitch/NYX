@@ -5,7 +5,7 @@ function convertToBool(text, fault = 'true') {
     return text === fault ? true : false;
 }
 module.exports = {
-    SESSION_ID: process.env.SESSION_ID || "BLAZE~PYEDCCpK#bW17UmXpYbHUcfAzJL9dUcfkP4LVVO8WekRXbfBv2eM",
+	SESSION_ID: process.env.SESSION_ID || "",
     // add your Session Id
     AUTO_STATUS_SEEN: process.env.AUTO_STATUS_SEEN || "true",
     // make true or false status auto seen
@@ -16,8 +16,8 @@ module.exports = {
     // make true if you want auto reply on status
     AUTO_STATUS_MSG: process.env.AUTO_STATUS_MSG || ".𝗦𝗘𝗘𝗡 𝗬𝗢𝗨𝗥 𝗦𝗧𝗔𝗧𝗨𝗦 𝗕𝗬 𝗣𝗢𝗣𝗞𝗜𝗗 𝗫𝗧𝗥🔄",
     // set the auto reply massage on status reply
-    ANTI_LINK: process.env.ANTI_LINK || "on",
-    // make anti link true,false for groups
+    ANTI_LINK: process.env.ANTI_LINK || "off",
+    // Deployment default only; anti-link is enabled per group with .antilink on.
     MENTION_REPLY: process.env.MENTION_REPLY || "true",
     // make true if want auto voice reply if someone menetion you
     MENU_IMAGE_URL: process.env.MENU_IMAGE_URL || "https://files.catbox.moe/kbbm5e.jpg",
@@ -53,11 +53,13 @@ module.exports = {
     CHANNEL_JID: process.env.CHANNEL_JID || '120363421014261315@newsletter',
     GROUP_LINK: process.env.GROUP_LINK || 'https://chat.whatsapp.com/IrmNcI7Wn0C4bdLC70xVPJ',
     DEFAULT_GROUP_JID: process.env.DEFAULT_GROUP_JID || '120363406591837257@g.us',
+    // Official Meta AI WhatsApp contact; override only if WhatsApp provides a different local contact.
+    META_AI_JID: process.env.META_AI_JID || '13135550002@s.whatsapp.net',
     // secondary owner (used by .owner and internal checks)
     OWNER_NUMBER2: process.env.OWNER_NUMBER2 || "255754206718",
     READ_MESSAGE: process.env.READ_MESSAGE || "false",
     // Turn true or false for automatic read msgs
-    AUTO_REACT: process.env.AUTO_REACT || "false",
+	AUTO_REACT: process.env.AUTO_REACT || "true",
     // make this true or false for auto react on all msgs
     ANTI_BAD: process.env.ANTI_BAD || "true",
     // false or true for anti bad words
@@ -87,9 +89,9 @@ module.exports = {
     // change it to 'same' if you want to resend deleted message in same chat
     AUTO_RECORDING: process.env.AUTO_RECORDING || "true",
     // make it true for auto recoding
-    WELCOME: process.env.WELCOME || "true",
+	WELCOME: process.env.WELCOME || "false",
     // make true for welcome messages on group member add
-    GOODBYE: process.env.GOODBYE || "true",
+	GOODBYE: process.env.GOODBYE || "false",
     // make true for goodbye messages on group member remove
     HEROKU_API_KEY: process.env.HEROKU_API_KEY || "",
     // Your Heroku API key for automatic redeploy

@@ -1,154 +1,48 @@
 const { cmd } = require('../command');
 const config = require('../config');
 const pluginSettings = require('../lib/pluginSettings');
-const store = require('../data/store');
 
-// Export goodbye handler function
+const isEnabled = (value) => value === true || String(value).toLowerCase() === 'true' || String(value).toLowerCase() === 'on';
+
 module.exports.handleGoodbye = async (conn, id, participants, groupMetadata) => {
+    if (!conn || !id || !Array.isArray(participants) || !groupMetadata?.participants) return;
+
+    let enabled = isEnabled(config.GOODBYE);
     try {
-        // Validation checks
-        if (!conn || !id || !participants || !groupMetadata) {
-            console.error('❌ Invalid parameters in handleGoodbye:', { conn: !!conn, id: !!id, participants: !!participants, groupMetadata: !!groupMetadata });
-            return;
-        }
-
-        // Check global setting and per-group override
-        let goodbyeEnabled = config.GOODBYE === 'true';
-        let goodbyeOverride = undefined;
-        try {
-            const override = await pluginSettings.get(id, 'goodbye');
-            goodbyeOverride = override;
-            if (override !== undefined) goodbyeEnabled = (override === true || String(override) === 'true' || String(override).toLowerCase() === 'on');
-        } catch (err) {
-            console.error('Error reading plugin setting (goodbye):', err);
-        }
-        if (!goodbyeEnabled) return;
-
-        // Ensure participants is an array and normalize participant IDs
-        if (!Array.isArray(participants)) {
-            console.error('❌ Participants is not an array:', typeof participants);
-            return;
-        }
-
-        // Normalize participants to JID strings if provided as objects
-        participants = participants.map(p => {
-            if (!p) return p;
-            if (typeof p === 'string') return p;
-            if (p.id) return p.id;
-            if (p.jid) return p.jid;
-            return String(p);
-        }).filter(Boolean);
-
-        // Ensure groupMetadata exists and has participants
-        if (!groupMetadata.participants || !Array.isArray(groupMetadata.participants)) {
-            console.error('❌ Group metadata is invalid');
-            return;
-        }
-
-        const groupName = groupMetadata.subject || 'Group';
-
-        // Send goodbye messages concurrently for faster response
-        const sendPromises = participants.map(async (participant) => {
-            try {
-                if (!participant || typeof participant !== 'string') {
-                    console.warn('⚠️ Invalid participant:', participant);
-                    return;
-                }
-
-                let userName = 'Member';
-                try {
-                    if (typeof conn.getName === 'function') userName = (await conn.getName(participant)) || userName;
-                    if (!userName || userName === participant) userName = await store.getName(participant) || userName;
-                } catch (e) {
-                    userName = await store.getName(participant) || userName;
-                }
-                const memberNumber = (participant || '').toString().replace('@s.whatsapp.net', '');
-
-                if (!memberNumber || memberNumber.length === 0) {
-                    console.warn('⚠️ Invalid member number extracted');
-                    return;
-                }
-
-                let goodbyeMsg = config.GOODBYE_MESSAGE || `Goodbye {name}.\nWe now have {members} members remaining.\n\nHope to see you again!`;
-
-                if (config.GOODBYE_MESSAGE && typeof config.GOODBYE_MESSAGE === 'string') {
-                    goodbyeMsg = config.GOODBYE_MESSAGE;
-                }
-
-                let caption = goodbyeMsg
-                    .replace(/{name}/g, userName)
-                    .replace(/{number}/g, memberNumber)
-                    .replace(/{members}/g, String(groupMetadata.participants.length))
-                    .replace(/{group}/g, groupName);
-                try {
-                    const source = (goodbyeOverride !== undefined) ? 'group override' : 'global';
-                    caption = `${caption}\n\n⚙️ Goodbye: ON (${source})`;
-                } catch (e) {
-                }
-
-                if (!caption || caption.length === 0) {
-                    console.warn('⚠️ Goodbye message is empty');
-                    return;
-                }
-
-                // Try to fetch the participant's profile picture, fall back to configured image
-                try {
-                    let ppUrl = null;
-                    try {
-                        if (typeof conn.profilePictureUrl === 'function') ppUrl = await conn.profilePictureUrl(participant, 'image');
-                    } catch (e) {
-                        ppUrl = null;
-                    }
-                    const imageUrl = ppUrl || config.ALIVE_IMG || config.MENU_IMAGE_URL;
-                    await conn.sendMessage(id, { image: { url: imageUrl }, caption }, { mentions: [participant] });
-                } catch (err) {
-                    try {
-                        await conn.sendMessage(id, { text: caption, mentions: [participant] });
-                    } catch (e) {
-                        console.error('Failed to send goodbye message:', e);
-                    }
-                }
-                console.log(`✅ Goodbye message queued for ${userName} in ${groupName}`);
-            } catch (err) {
-                console.error('❌ Error sending goodbye message for participant:', err && err.message ? err.message : err);
-            }
-        });
-
-        await Promise.allSettled(sendPromises);
-    } catch (err) {
-        console.error('❌ Error in goodbye handler:', err.message);
-        console.error('Stack trace:', err.stack);
+        const override = await pluginSettings.get(id, 'goodbye');
+        if (override !== undefined) enabled = isEnabled(override);
+    } catch (error) {
+        console.error('Error reading goodbye setting:', error.message);
     }
+    if (!enabled) return;
+
+    const groupName = groupMetadata.subject || 'Group';
+    const template = typeof config.GOODBYE_MESSAGE === 'string' && config.GOODBYE_MESSAGE.trim()
+        ? config.GOODBYE_MESSAGE
+        : 'Goodbye {name}.\nWe now have {members} members remaining.\n\nHope to see you again!';
+
+    await Promise.allSettled(participants.map(async (entry) => {
+        const participant = typeof entry === 'string' ? entry : entry?.id || entry?.jid;
+        if (!participant) return;
+        const number = participant.replace('@s.whatsapp.net', '');
+        const caption = template
+            .replace(/{name}/g, 'Member')
+            .replace(/{number}/g, number)
+            .replace(/{members}/g, String(groupMetadata.participants.length))
+            .replace(/{group}/g, groupName);
+        await conn.sendMessage(id, { text: caption, mentions: [participant] });
+    }));
 };
 
-// Command to set custom goodbye message
 cmd({
-    pattern: "setgoodbye",
-    desc: "Set a custom goodbye message",
-    category: "settings",
+    pattern: 'setgoodbye',
+    desc: 'Set a custom goodbye message',
+    category: 'settings',
     filename: __filename
-}, async (conn, mek, m, { from, args, q, isAdmins, isGroup, reply }) => {
-    if (!isGroup) return reply("❌ This command can only be used in groups!");
-    if (!isAdmins) return reply("❌ You must be a group admin to set goodbye messages!");
-
-    if (!q) return reply(`📝 *Custom Goodbye Message Setup*
-
-Use these placeholders:
-• {name} - Member name
-• {number} - Member number
-• {members} - Remaining members
-• {group} - Group name
-
-✅ *Example:*
-.setgoodbye Goodbye {name}! 👋
-We had fun together!
-
-📌 *Usage:*
-.setgoodbye <your custom message>`);
-
+}, async (conn, mek, m, { q, isAdmins, isGroup, reply }) => {
+    if (!isGroup) return reply('❌ This command can only be used in groups!');
+    if (!isAdmins) return reply('❌ You must be a group admin to set goodbye messages!');
+    if (!q) return reply(`📝 *Custom Goodbye Message Setup*\n\nPlaceholders: {name}, {number}, {members}, {group}\n\nUsage: .setgoodbye <your custom message>`);
     config.GOODBYE_MESSAGE = q;
-    return reply(`✅ *Goodbye message updated!*
-
-📝 Custom message:
-${q}`);
+    return reply(`✅ *Goodbye message updated!*\n\n📝 Custom message:\n${q}`);
 });

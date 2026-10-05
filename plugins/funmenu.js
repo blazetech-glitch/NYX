@@ -31,7 +31,7 @@ cmd({
             sections: [{ title: "Fun Commands", rows: funRows }],
             headerType: 1,
             contextInfo: { mentionedJid: [sender] },
-            image: { url: "https://files.catbox.moe/kbbm5e.jpg" }
+            image: require('../lib/branding').getMainImage() || { url: 'https://files.catbox.moe/kbbm5e.jpg' }
         };
 
         await conn.sendMessage(from, listMessage, { quoted: mek });

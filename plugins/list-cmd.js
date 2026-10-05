@@ -71,7 +71,7 @@ cmd({
         await conn.sendMessage(
             from,
             {
-                image: { url: config.MENU_IMAGE_URL || 'https://files.catbox.moe/kbbm5e.jpg' },
+                image: require('../lib/branding').getMainImage() || { url: config.MENU_IMAGE_URL || 'https://files.catbox.moe/kbbm5e.jpg' },
                 caption: menuText,
                 contextInfo: {
                     mentionedJid: [m.sender],

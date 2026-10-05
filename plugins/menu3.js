@@ -3,56 +3,49 @@ const { getPrefix } = require('../lib/prefix');
 const config = require('../config');
 const moment = require('moment-timezone');
 const { runtime } = require('../lib/functions');
+const { getMainImage } = require('../lib/branding');
+const { userTag, context, image, version, cyberText } = require('../lib/ui');
 
 cmd({
-    pattern: 'menu3',
-    alias: ['menu3', 'hmenu'],
-    desc: 'Show compact menu',
-    category: 'menu',
-    react: '📋',
-    filename: __filename
-}, async (conn, mek, m, { from, sender, isGroup, reply }) => {
-    try {
-        const prefix = getPrefix();
-        const time = moment().tz(config.TIMEZONE || 'Africa/Nairobi').format('HH:mm:ss');
-        const date = moment().format('DD/MM/YYYY');
+  pattern: 'menu3',
+  alias: ['hmenu'],
+  desc: 'Show compact menu',
+  category: 'menu',
+  react: '📋',
+  filename: __filename
+}, async (conn, mek, m, { from, sender, reply }) => {
+  try {
+    const prefix = getPrefix();
+    const now = moment().tz(config.TIMEZONE || 'Africa/Nairobi');
+    const text = `╭━━━〔 *${config.BOT_NAME || 'NYX MD'}* 〕━━━╮
+┃  *QUICK ACCESS*
+╰━━━━━━━━━━━━━━━━━━━━╯
 
-        const menuText = `╭─❒ *NYX MD COMPACT MENU* ❒─╮
-│
-├─ 👤 *User:* @${sender.split("@")[0]}
-├─ ⏱️ *Uptime:* ${runtime(process.uptime())}
-├─ 🕒 *Time:* ${time} | ${date}
-├─ 🔧 *Prefix:* ${prefix}
-│
-├─ 📋 *Available Menus:*
-│
-├─ 🏠 *${prefix}menu* - Main commands
-├─ ⬇️ *${prefix}dlmenu* - Downloads
-├─ 👥 *${prefix}groupmenu* - Group tools
-├─ 🤖 *${prefix}aimenu* - AI features
-├─ 🔍 *${prefix}searchmenu* - Search tools
-├─ 🎮 *${prefix}funmenu* - Fun commands
-├─ 👑 *${prefix}owner* - Owner panel
-├─ 📦 *${prefix}othermenu* - Other tools
-│
-╰─❒ *${config.OWNER_NAME}* ❒─╯
+┌─〔 MENUS 〕
+│ ${cyberText('menu')}       \`${prefix}menu\`       All commands
+│ ${cyberText('menu2')}      \`${prefix}menu2\`      Menu panel
+│ ${cyberText('groupmenu')}  \`${prefix}groupmenu\`  Group tools
+│ ${cyberText('aimenu')}     \`${prefix}aimenu\`     AI features
+│ ${cyberText('searchmenu')} \`${prefix}searchmenu\` Search tools
+│ ${cyberText('funmenu')}    \`${prefix}funmenu\`    Fun commands
+│ ${cyberText('owner')}      \`${prefix}owner\`      Owner panel
+│ ${cyberText('othermenu')}  \`${prefix}othermenu\`  Other tools
+└──────────────
 
-> *Type any command to use it* ✨`;
+User    ${userTag(sender)}
+Uptime  ${runtime(process.uptime())}
+Time    ${now.format('HH:mm')} · ${now.format('DD MMM YYYY')}
+Version ${version()}
 
-        const contextInfo = {
-            mentionedJid: [sender],
-            forwardingScore: 999,
-            isForwarded: true
-        };
+_Type ${prefix} before a command_`;
 
-        await conn.sendMessage(from, {
-            image: { url: config.MENU_IMAGE_URL || "https://files.catbox.moe/kbbm5e.jpg" },
-            caption: menuText,
-            contextInfo: contextInfo
-        }, { quoted: mek });
-
-    } catch (error) {
-        console.error('Menu3 Error:', error);
-        reply('❌ An error occurred while displaying the menu.');
-    }
+    await conn.sendMessage(from, {
+      image: image(config, getMainImage),
+      caption: text,
+      contextInfo: context(sender)
+    }, { quoted: mek });
+  } catch (error) {
+    console.error('Menu3 Error:', error);
+    await reply('Unable to display the quick menu right now.');
+  }
 });

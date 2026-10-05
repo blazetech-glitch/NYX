@@ -165,8 +165,9 @@ cmd({
       return;
     }
 
-    // Check global setting and per-group override for anti-link
-    let antiLinkEnabled = isEnabledSetting(config.ANTI_LINK);
+    // Anti-link is intentionally opt-in per group. Deployment/global config is
+    // not used to activate moderation across every group.
+    let antiLinkEnabled = false;
     try {
       const override = await pluginSettings.get(from, 'antilink');
       if (override !== undefined) {
@@ -271,7 +272,7 @@ cmd({
         try {
           const kickMsg = getRandomMessage(kickMessages);
           await conn.sendMessage(from, {
-            text: `🚫 *FINAL WARNING - USER REMOVED* 🚫\n\n${kickMsg}\n\n@${sender.split('@')[0]} has been removed for reaching ${maxWarns} link violations!\n\n👋 Goodbye!`,
+            text: `🚫 *REMOVED FOR LINKS*\n\n${kickMsg}\n\n@${sender.split('@')[0]} reached ${maxWarns}/${maxWarns} warnings and was removed.`,
             mentions: [sender]
           });
           
@@ -292,35 +293,15 @@ cmd({
         const warningsLeft = maxWarns - newWarns;
         const progressBar = '█'.repeat(newWarns) + '░'.repeat(maxWarns - newWarns);
         
-        let warningText = `
-╔═════════════════════════════════════════╗
-║           🔴 LINK ALERT 🔴             ║
-╚═════════════════════════════════════════╝
-
-*${funMsg}*
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-👤 *User:* @${sender.split('@')[0]}
-🔗 *Action:* Link deleted immediately
-📊 *Warnings:* ${newWarns}/${maxWarns}
-⏳ *Remaining:* ${warningsLeft} more warning${warningsLeft === 1 ? '' : 's'}
-🛑 *Outcome:* Reaching ${maxWarns} warnings will remove you from the group
-
-*Progress:* [${progressBar}]
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-`;
+          let warningText = `🚫 *LINK BLOCKED*\n\n*${funMsg}*\n\n👤 @${sender.split('@')[0]} · 🗑️ Deleted\n📊 *Warning:* ${newWarns}/${maxWarns}  [${progressBar}]\n⏳ *${warningsLeft}* left before removal\n\n💬 Links are not allowed in this group.`;
 
         if (newWarns === 1) {
-          warningText += `\n⚠️ *First warning!* Don't post links again.\n`;
+          warningText += `\n⚠️ First warning — please do not post links again.`;
+        } else if (newWarns === maxWarns - 1) {
+          warningText += `\n🚨 Critical: one more warning and you are removed.`;
         } else if (newWarns >= 3 && newWarns < maxWarns) {
-          warningText += `\n🔴 *DANGER!* ${warningsLeft} warning${warningsLeft === 1 ? '' : 's'} left before removal!\n`;
-        } else if (newWarns === 4) {
-          warningText += `\n🚨 *CRITICAL!* One more warning and you're OUT! 👋\n`;
+          warningText += `\n🔴 Danger: ${warningsLeft} warning${warningsLeft === 1 ? '' : 's'} left.`;
         }
-
-        warningText += `\n💬 Links are NOT allowed in this group!`;
 
         await conn.sendMessage(from, {
           text: warningText,
@@ -329,7 +310,7 @@ cmd({
 
         try {
           await conn.sendMessage(sender, {
-            text: `⚠️ Your link message was removed in this group. Warning ${newWarns}/${maxWarns}. ${warningsLeft > 0 ? `${warningsLeft} warning${warningsLeft === 1 ? '' : 's'} left before removal.` : 'This was your final warning.'}`
+            text: `⚠️ Link removed in the group. Warning ${newWarns}/${maxWarns}; ${warningsLeft > 0 ? `${warningsLeft} left.` : 'final warning.'}`
           });
         } catch (dmErr) {
           console.error('Failed to send warning DM:', dmErr.message);

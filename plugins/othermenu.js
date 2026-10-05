@@ -2,41 +2,38 @@ const { cmd } = require('../command');
 const { getPrefix } = require('../lib/prefix');
 const config = require('../config');
 const moment = require('moment-timezone');
+const { getMainImage } = require('../lib/branding');
+const { userTag, context, image } = require('../lib/ui');
 
 cmd({
-    pattern: 'othermenu',
-    alias: ['other'],
-    desc: 'Show all Other commands',
-    category: 'other',
-    react: '📁',
-    filename: __filename
+  pattern: 'othermenu',
+  alias: ['other'],
+  desc: 'Show utility commands',
+  category: 'other',
+  react: '📁',
+  filename: __filename
 }, async (conn, mek, m, { from, sender, reply }) => {
-    try {
-        const prefix = getPrefix();
-        const time = moment().tz(config.TIMEZONE || 'Africa/Nairobi').format('HH:mm:ss');
-        const date = moment().tz(config.TIMEZONE || 'Africa/Nairobi').format('dddd, DD MMMM YYYY');
+  try {
+    const prefix = getPrefix();
+    const now = moment().tz(config.TIMEZONE || 'Africa/Nairobi');
+    const rows = [
+      ['Bot information', 'botinfo', 'View bot details'],
+      ['Owner information', 'owner', 'View owner details'],
+      ['System response', 'ping', 'Measure response time'],
+      ['System status', 'alive', 'View health and uptime']
+    ].map(([title, command, description]) => ({ title, rowId: `${prefix}${command}`, description }));
 
-        const otherRows = [
-            { title: "Bot Info", rowId: `${prefix}botinfo`, description: "Get bot information" },
-            { title: "Owner Info", rowId: `${prefix}owner`, description: "Bot owner information" },
-            { title: "Ping", rowId: `${prefix}ping`, description: "Check bot ping" },
-            { title: "Alive", rowId: `${prefix}alive`, description: "Check bot status" }
-        ];
-
-        const listMessage = {
-            text: "*📁 OTHER MENU*\n\nSelect a command below:",
-            footer: `🌟 NYX-XD Bot | Blaze Tech 🌟\n👤 User: @${sender.split('@')[0]}\n📅 ${time} • ${date}`,
-            buttonText: "Open Other Menu",
-            sections: [{ title: "Other Commands", rows: otherRows }],
-            headerType: 1,
-            contextInfo: { mentionedJid: [sender] },
-            image: { url: "https://files.catbox.moe/kbbm5e.jpg" }
-        };
-
-        await conn.sendMessage(from, listMessage, { quoted: mek });
-
-    } catch (e) {
-        console.error('Other Menu Error:', e);
-        await reply(`❌ Error: ${e.message}`);
-    }
+    await conn.sendMessage(from, {
+      text: `╭━━━〔 *${config.BOT_NAME || 'NYX MD'}* 〕━━━╮\n┃  *UTILITY CENTER*\n╰━━━━━━━━━━━━━━━━━━━━╯\n\nUser  ${userTag(sender)}\nTime  ${now.format('HH:mm')} · ${now.format('DD MMM YYYY')}\n\n_Select a utility below._`,
+      footer: `NYX MD  ·  ${config.OWNER_NAME || 'BLAZE TECH'}`,
+      buttonText: 'Open utilities',
+      sections: [{ title: 'Available utilities', rows }],
+      headerType: 1,
+      contextInfo: context(sender),
+      image: image(config, getMainImage)
+    }, { quoted: mek });
+  } catch (error) {
+    console.error('Other Menu Error:', error);
+    await reply('Unable to display the utility menu right now.');
+  }
 });

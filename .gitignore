@@ -6,6 +6,8 @@ yarn-error.log*
 .env
 .env.*
 !.env.example
+config.env
+config.js.bak
 sessions/*
 !sessions/backup/
 store/

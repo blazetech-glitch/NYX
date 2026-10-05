@@ -32,7 +32,7 @@ cmd({
 > *Choose a prefix that doesn't conflict with other bots* ✨`;
 
             await conn.sendMessage(from, {
-                image: { url: config.MENU_IMAGE_URL || "https://files.catbox.moe/kbbm5e.jpg" },
+                image: require('../lib/branding').getMainImage() || { url: config.MENU_IMAGE_URL || 'https://files.catbox.moe/kbbm5e.jpg' },
                 caption: message,
                 contextInfo: { mentionedJid: [sender] }
             }, { quoted: mek });
@@ -81,7 +81,7 @@ cmd({
 > *Your personal prefix is now active!* ✨`;
 
         await conn.sendMessage(from, {
-            image: { url: config.MENU_IMAGE_URL || "https://files.catbox.moe/kbbm5e.jpg" },
+            image: require('../lib/branding').getMainImage() || { url: config.MENU_IMAGE_URL || 'https://files.catbox.moe/kbbm5e.jpg' },
             caption: confirmMessage,
             contextInfo: { mentionedJid: [sender] }
         }, { quoted: mek });
