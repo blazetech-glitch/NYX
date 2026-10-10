@@ -237,7 +237,7 @@ async function autoFollowConfiguredChannels(conn, logger = console) {
 // Function to handle channel reactions
 async function handleChannelReaction(conn, mek) {
     try {
-        if (String(config.AUTO_REACT).toLowerCase() !== 'true' && config.AUTO_REACT !== true) return;
+        if (String(config.CHANNEL_AUTO_REACT).toLowerCase() !== 'true' && config.CHANNEL_AUTO_REACT !== true) return;
 
         const remoteJid = mek?.key?.remoteJid;
         const participant = mek?.key?.participant || mek?.participant;

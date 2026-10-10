@@ -7,7 +7,7 @@ const config = require('../config');
 cmd({
     pattern: "autoreact",
     alias: ["auto-react"],
-    desc: "Enable or disable the autoreact feature",
+    desc: "Enable or disable autoreactions for ordinary messages",
     category: "settings",
     filename: __filename
 },    
@@ -33,7 +33,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 
         fs.writeFileSync(envFile, envContent.trim() + "\n");
 
-        await reply(`✅ *Auto-react feature has been turned ${status.toUpperCase()}.*`);
+        await reply(`✅ *Ordinary message autoreactions: ${status.toUpperCase()}.*\n📢 *Channel reactions remain independent and enabled.*`);
 
     } catch (e) {
         console.error(e);

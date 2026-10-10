@@ -60,7 +60,9 @@ module.exports = {
     READ_MESSAGE: process.env.READ_MESSAGE || "false",
     // Turn true or false for automatic read msgs
 	AUTO_REACT: process.env.AUTO_REACT || "false",
-	    // Deployment default is off; enable explicitly with .autoreact on.
+	    // Ordinary message autoreactions are off by default; enable explicitly with .autoreact on.
+	CHANNEL_AUTO_REACT: process.env.CHANNEL_AUTO_REACT || "true",
+	    // Channel reactions are independent from ordinary message autoreactions.
     ANTI_BAD: process.env.ANTI_BAD || "true",
     // false or true for anti bad words
     MODE: process.env.MODE || "public",
