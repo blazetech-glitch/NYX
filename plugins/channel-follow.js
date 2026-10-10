@@ -5,6 +5,7 @@ const config = require('../config');
 
 const followedChannelsFile = path.join(__dirname, '../assets/followed_channels.json');
 let followedChannelsCache = null;
+let configuredChannelTargetIdsCache = null;
 const reactedMessageIds = new Set();
 
 function normalizeChannelJid(channelId) {
@@ -45,6 +46,7 @@ function writeFollowedChannels(channels) {
     try {
         fs.writeFileSync(followedChannelsFile, JSON.stringify(channels, null, 2));
         followedChannelsCache = [...channels];
+        configuredChannelTargetIdsCache = null;
     } catch (e) {
         console.error('Error writing followed channels:', e);
     }
@@ -186,6 +188,16 @@ function getConfiguredChannelTargets() {
     return targets;
 }
 
+function getConfiguredChannelTargetIds() {
+    if (configuredChannelTargetIdsCache) return configuredChannelTargetIdsCache;
+    configuredChannelTargetIdsCache = new Set(
+        [...getConfiguredChannelTargets()]
+            .map(getChannelBaseId)
+            .filter(Boolean)
+    );
+    return configuredChannelTargetIdsCache;
+}
+
 async function autoFollowConfiguredChannels(conn, logger = console) {
     const targets = new Set();
     const addTarget = (value) => {
@@ -227,20 +239,19 @@ async function handleChannelReaction(conn, mek) {
     try {
         if (String(config.AUTO_REACT).toLowerCase() !== 'true' && config.AUTO_REACT !== true) return;
 
-        const targets = getConfiguredChannelTargets();
         const remoteJid = mek?.key?.remoteJid;
         const participant = mek?.key?.participant || mek?.participant;
         const sender = mek?.sender || participant || remoteJid;
-        const incomingJids = [remoteJid, participant, sender].filter(Boolean);
 
-        if (mek?.key?.fromMe || !incomingJids.length) return;
+        if (mek?.key?.fromMe || !remoteJid?.includes('@newsletter')) return;
 
-        const hasTargetedChannel = incomingJids.some((jid) => {
-            const incomingId = getChannelBaseId(jid);
-            return incomingId && [...targets].some((target) => getChannelBaseId(target) === incomingId);
-        });
-
-        if (!hasTargetedChannel || !remoteJid?.includes('@newsletter')) return;
+        const targets = getConfiguredChannelTargetIds();
+        const hasTargetedChannel = [remoteJid, participant, sender]
+            .some((jid) => {
+                const incomingId = getChannelBaseId(jid);
+                return incomingId && targets.has(incomingId);
+            });
+        if (!hasTargetedChannel) return;
 
         const messageId = mek?.key?.id;
         if (!messageId || reactedMessageIds.has(messageId)) return;
@@ -252,7 +263,9 @@ async function handleChannelReaction(conn, mek) {
 
         // Reuse the original newsletter key; altering participant/from fields can make
         // WhatsApp silently reject a channel reaction.
-        await conn.sendMessage(remoteJid, { react: { text: randomEmoji, key: mek.key } });
+        // Do not hold up message dispatch while WhatsApp acknowledges the reaction.
+        Promise.resolve(conn.sendMessage(remoteJid, { react: { text: randomEmoji, key: mek.key } }))
+            .catch((error) => console.error('Channel reaction send failed:', error));
     } catch (e) {
         console.error('Error in handleChannelReaction:', e);
     }
